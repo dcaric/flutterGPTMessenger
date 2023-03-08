@@ -16,9 +16,12 @@ class _SettingsState extends State<Settings> {
   String myKeyText = "";
   String? myKey;
 
-  Future<void> _saveKey(String myKey) async {
+  Future<void> _saveKey(String keyToSave) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('myKey', myKey);
+    prefs.setString('myKey', keyToSave);
+    setState(() {
+      myKey = keyToSave;
+    });
   }
 
   Future<void> _readKey() async {
