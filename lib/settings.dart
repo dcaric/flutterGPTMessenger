@@ -74,8 +74,6 @@ class _SettingsState extends State<Settings> {
                   child: Text("SAVE"),
                   onPressed: () async {
                     _saveKey(myKeyText);
-                    //_saveKey(
-                    //    "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");
                     print("** myKey: $myKey");
                   },
                 ),
