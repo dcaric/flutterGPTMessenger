@@ -73,27 +73,6 @@ class _ChatState extends State<Chat> with ChangeNotifier {
     showModalBottomSheet(
         context: ctx,
         builder: (btx) {
-          return Column(
-            children: [
-              ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Colors.blue),
-                  foregroundColor: MaterialStateProperty.all(Colors.white),
-                ),
-                onPressed: () {
-                  showKeyboard();
-                },
-                child: Text('Show Keyboard'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  dismissKeyboard();
-                },
-                child: Text('Dismiss Keyboard'),
-              ),
-            ],
-          );
-          /*
           return AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
@@ -109,8 +88,27 @@ class _ChatState extends State<Chat> with ChangeNotifier {
                 ),
               ),
             ),
-          );*/
+          );
         });
+  }
+
+  Future<void> _onDone() async {
+    print('Done button clicked!');
+    setState(() {
+      messages.add(Tuple2(_textEditingController.text, true));
+      _listLength.value += 1;
+      scrollDown();
+    });
+    var httpReq = HttpRquest();
+    var response =
+        await httpReq.sendRequestToOpenAI(_textEditingController.text);
+    _textEditingController.clear();
+    setState(() {
+      messages.add(Tuple2(response, false));
+      _listLength.value += 1;
+      scrollDown();
+    });
+    print("response:$response");
   }
 
   @override
@@ -124,25 +122,54 @@ class _ChatState extends State<Chat> with ChangeNotifier {
         appBar: AppBar(
           title: Text('ChatGPT'),
         ),
+        resizeToAvoidBottomInset:
+            false, // remove white space on top of keyboard
         body: Stack(
           children: <Widget>[
-            ValueListenableBuilder<int>(
-              valueListenable: _listLength,
-              builder: (BuildContext context, int length, _) {
-                return ListView.builder(
-                  controller: _scrollController,
-                  itemCount: messages.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return MessageBubble(
-                      message: messages[index].item1,
-                      isMe: messages[index].item2, // alternate bubble alignment
-                    );
-                  },
-                );
-              },
+            Container(
+              child: ValueListenableBuilder<int>(
+                valueListenable: _listLength,
+                builder: (BuildContext context, int length, _) {
+                  return ListView.builder(
+                    controller: _scrollController,
+                    itemCount: messages.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return MessageBubble(
+                        message: messages[index].item1,
+                        isMe:
+                            messages[index].item2, // alternate bubble alignment
+                      );
+                    },
+                  );
+                },
+              ),
             ),
             Align(
               alignment: Alignment.bottomCenter,
+              child: Container(
+                color: Colors.grey[200],
+                child: TextField(
+                  onSubmitted: (_) {
+                    _onDone();
+                  },
+                  controller: _textEditingController,
+                  focusNode: _focusNode,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        //
+                        _textEditingController.clear();
+                      },
+                      icon: const Icon(Icons.clear),
+                    ),
+                    hintText: 'message',
+                    contentPadding: EdgeInsets.all(16.0),
+                  ),
+                ),
+              ),
+            ),
+            /*
               child: Column(
                 children: [
                   Container(
@@ -173,7 +200,7 @@ class _ChatState extends State<Chat> with ChangeNotifier {
                     onPressed: () async {
                       setState(() {
                         messages.add(Tuple2(_textEditingController.text, true));
-                        _listLength.value += _textEditingController.text.length;
+                        _listLength.value += 1;
                         scrollDown();
                       });
                       var httpReq = HttpRquest();
@@ -182,38 +209,18 @@ class _ChatState extends State<Chat> with ChangeNotifier {
                       _textEditingController.clear();
                       setState(() {
                         messages.add(Tuple2(response, false));
-                        _listLength.value += response.length;
+                        _listLength.value += 1;
                         scrollDown();
                       });
                       print("response:$response");
                     },
                   ),
                 ],
-              ),
-              /*
-              child: Container(
-                color: Colors.grey[200],
-                child: TextField(
-                  controller: _textEditingController,
-                  focusNode: _focusNode,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        //
-                        _textEditingController.clear();
-                      },
-                      icon: const Icon(Icons.clear),
-                    ),
-                    hintText: 'message',
-                    contentPadding: EdgeInsets.all(16.0),
-                  ),
-                ),
               ),*/
-            ),
+            //),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
+        /*floatingActionButton: FloatingActionButton(
           onPressed: () {
             _listLength.value += 1;
             _scrollController.animateTo(
@@ -223,7 +230,13 @@ class _ChatState extends State<Chat> with ChangeNotifier {
             );
           },
           child: Icon(Icons.arrow_circle_down_rounded),
-        ),
+        ),*/
+        /*
+        floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () => {_startNewMessage(context)},
+        ),*/
         /*
         floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
         floatingActionButton: FloatingActionButton(
