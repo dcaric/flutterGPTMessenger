@@ -1,8 +1,12 @@
 import 'dart:ffi';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:messenger_demo/http_request.dart';
 import 'package:tuple/tuple.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import './popup.dart';
 
 class Chat extends StatefulWidget {
   const Chat({Key? key}) : super(key: key);
@@ -17,6 +21,10 @@ class _ChatState extends State<Chat> with ChangeNotifier {
   final ScrollController _scrollController = ScrollController();
   final ValueNotifier<int> _listLength = ValueNotifier<int>(0);
 
+  final TextEditingController _controller1 = TextEditingController();
+  final TextEditingController _controller2 = TextEditingController();
+  final PopupMenuExample _popup = const PopupMenuExample();
+
   double _keyboardHeight = 0.0;
 
   @override
@@ -26,6 +34,7 @@ class _ChatState extends State<Chat> with ChangeNotifier {
     _focusNode.addListener(() {
       print('Listener');
     });
+    _loadList();
 
 /*
     _focusNode.addListener(() {
@@ -50,7 +59,7 @@ class _ChatState extends State<Chat> with ChangeNotifier {
   }
 
   //const Chat({super.key});
-  final List<Tuple2<String, bool>> messages = [
+  List<Tuple2<String, bool>> messages = [
     Tuple2("Hello!", true),
     Tuple2("How are you?", false),
     Tuple2("I'm good, thanks for asking. How about you?", true),
@@ -108,7 +117,46 @@ class _ChatState extends State<Chat> with ChangeNotifier {
       _listLength.value += 1;
       scrollDown();
     });
+    _saveList(messages);
     print("response:$response");
+  }
+
+  Future<void> _loadList() async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString('myList');
+    print("loadList:$json");
+
+    if (json != null) {
+      print("json != null");
+
+      final data = jsonDecode(json);
+      print("data:$data");
+
+      if (json != null) {
+        final data = jsonDecode(json);
+        List<dynamic> items = data;
+        var messagesToLoad = <Tuple2<String, bool>>[];
+        for (var item in items) {
+          messagesToLoad.add(Tuple2(item['value1'], item['value2']));
+        }
+        print("messagesToLoad:$messagesToLoad");
+        setState(() {
+          messages = messagesToLoad;
+        });
+      }
+    } else {
+      print("****");
+    }
+    print("*** messages:$messages");
+  }
+
+  Future<void> _saveList(List<Tuple2<String, bool>> list) async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = jsonEncode(
+      list.map((item) => {'value1': item.item1, 'value2': item.item2}).toList(),
+    );
+    print("saveList:$json");
+    await prefs.setString('myList', json);
   }
 
   @override
@@ -150,7 +198,9 @@ class _ChatState extends State<Chat> with ChangeNotifier {
                 color: Colors.grey[200],
                 child: TextField(
                   onSubmitted: (_) {
-                    _onDone();
+                    if (_textEditingController.text != "") {
+                      _onDone();
+                    }
                   },
                   controller: _textEditingController,
                   focusNode: _focusNode,
@@ -169,55 +219,6 @@ class _ChatState extends State<Chat> with ChangeNotifier {
                 ),
               ),
             ),
-            /*
-              child: Column(
-                children: [
-                  Container(
-                    color: Colors.grey[200],
-                    child: TextField(
-                      controller: _textEditingController,
-                      focusNode: _focusNode,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            //
-                            _textEditingController.clear();
-                          },
-                          icon: const Icon(Icons.clear),
-                        ),
-                        hintText: 'message',
-                        contentPadding: EdgeInsets.all(16.0),
-                      ),
-                    ),
-                  ),
-                  ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Colors.blue),
-                      foregroundColor: MaterialStateProperty.all(Colors.white),
-                    ),
-                    child: Text("Send"),
-                    onPressed: () async {
-                      setState(() {
-                        messages.add(Tuple2(_textEditingController.text, true));
-                        _listLength.value += 1;
-                        scrollDown();
-                      });
-                      var httpReq = HttpRquest();
-                      var response = await httpReq
-                          .sendRequestToOpenAI(_textEditingController.text);
-                      _textEditingController.clear();
-                      setState(() {
-                        messages.add(Tuple2(response, false));
-                        _listLength.value += 1;
-                        scrollDown();
-                      });
-                      print("response:$response");
-                    },
-                  ),
-                ],
-              ),*/
-            //),
           ],
         ),
         /*floatingActionButton: FloatingActionButton(
@@ -270,31 +271,140 @@ class _ChatState extends State<Chat> with ChangeNotifier {
   }
 }
 
+/*
+// This is the type used by the popup menu below.
+enum SampleItem { itemOne, itemTwo, itemThree }
+
+class PopupMenuExample extends StatefulWidget {
+  const PopupMenuExample({super.key});
+
+  @override
+  State<PopupMenuExample> createState() => _PopupMenuExampleState();
+}
+
+class _PopupMenuExampleState extends State<PopupMenuExample> {
+  SampleItem? selectedMenu;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('PopupMenuButton')),
+      body: Center(
+        child: PopupMenuButton<SampleItem>(
+          initialValue: selectedMenu,
+          // Callback that sets the selected popup menu item.
+          onSelected: (SampleItem item) {
+            setState(() {
+              selectedMenu = item;
+              print("selectedMenu: $selectedMenu");
+            });
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<SampleItem>>[
+            const PopupMenuItem<SampleItem>(
+              value: SampleItem.itemOne,
+              child: Text('Item 1'),
+            ),
+            const PopupMenuItem<SampleItem>(
+              value: SampleItem.itemTwo,
+              child: Text('Item 2'),
+            ),
+            const PopupMenuItem<SampleItem>(
+              value: SampleItem.itemThree,
+              child: Text('Item 3'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}*/
+
 class MessageBubble extends StatelessWidget {
   final String message;
   final bool isMe;
+  final PopupMenuExample _popup = const PopupMenuExample();
+
+  Offset _tapPosition = Offset.zero;
 
   MessageBubble({required this.message, required this.isMe});
+
+  void _showContextMenu(BuildContext context) async {
+    final RenderObject? overlay =
+        Overlay.of(context)?.context.findRenderObject();
+
+    final result = await showMenu(
+        context: context,
+
+        // Show the context menu at the tap location
+        position: RelativeRect.fromRect(
+            Rect.fromLTWH(_tapPosition.dx, _tapPosition.dy, 30, 30),
+            Rect.fromLTWH(0, 0, overlay!.paintBounds.size.width,
+                overlay.paintBounds.size.height)),
+
+        // set a list of choices for the context menu
+        items: [
+          const PopupMenuItem(
+            value: 'favorites',
+            child: Text('Add To Favorites'),
+          ),
+          const PopupMenuItem(
+            value: 'comment',
+            child: Text('Write Comment'),
+          ),
+          const PopupMenuItem(
+            value: 'hide',
+            child: Text('Hide'),
+          ),
+        ]);
+
+    // Implement the logic for each choice here
+    switch (result) {
+      case 'favorites':
+        debugPrint('Add To Favorites');
+        break;
+      case 'comment':
+        debugPrint('Write Comment');
+        break;
+      case 'hide':
+        debugPrint('Hide');
+        break;
+    }
+  }
+
+  void _getTapPosition(BuildContext context, TapDownDetails details) {
+    final RenderBox referenceBox = context.findRenderObject() as RenderBox;
+    //setState(() {
+    _tapPosition = referenceBox.globalToLocal(details.globalPosition);
+    //});
+  }
 
   @override
   Widget build(BuildContext context) {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: EdgeInsets.all(10),
-        padding: EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: isMe ? Colors.blue : Colors.grey.shade200,
-        ),
-        child: Text(
-          message,
-          style: TextStyle(
-            color: isMe ? Colors.white : Colors.black,
-            fontSize: 16,
+          margin: EdgeInsets.all(10),
+          padding: EdgeInsets.all(15),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: isMe ? Colors.blue : Colors.grey.shade200,
           ),
-        ),
-      ),
+          child: GestureDetector(
+            onTapDown: (details) => _getTapPosition(context, details),
+            onLongPress: () {
+              // Handle tap on the text
+              //print("ononLongPressTap: $message");
+              //const PopupMenuExample();
+              _showContextMenu(context);
+            },
+            child: Text(
+              message,
+              style: TextStyle(
+                color: isMe ? Colors.white : Colors.black,
+                fontSize: 16,
+              ),
+            ),
+          )),
     );
   }
 }

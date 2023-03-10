@@ -28,6 +28,7 @@ class _MyAppState extends State<MyApp> {
         length: 2,
         child: Scaffold(
           body: TabBarView(
+            physics: NeverScrollableScrollPhysics(),
             children: [
               Center(child: Chat()),
               Center(child: Settings()),
