@@ -58,12 +58,7 @@ class _ChatState extends State<Chat> with ChangeNotifier {
   }
 
   //const Chat({super.key});
-  List<Tuple2<String, bool>> messages = [
-    Tuple2("Hello!", true),
-    Tuple2("How are you?", false),
-    Tuple2("I'm good, thanks for asking. How about you?", true),
-    Tuple2("I'm doing well too, thanks.", false)
-  ];
+  List<Tuple2<String, bool>> messages = [];
 
   void hideKeyboard(BuildContext context) {
     FocusScope.of(context).requestFocus(FocusNode());
