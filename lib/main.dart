@@ -36,6 +36,7 @@ class _MyAppState extends State<MyApp> {
           ),
           bottomNavigationBar: BottomAppBar(
             child: TabBar(
+              isScrollable: false,
               labelColor: Colors.black,
               tabs: [
                 Tab(text: "Chat", icon: Icon(Icons.chat_bubble)),

@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:messenger_demo/http_request.dart';
@@ -7,6 +5,7 @@ import 'package:tuple/tuple.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import './popup.dart';
+import 'package:flutter/services.dart';
 
 class Chat extends StatefulWidget {
   const Chat({Key? key}) : super(key: key);
@@ -184,8 +183,8 @@ class _ChatState extends State<Chat> with ChangeNotifier {
                     itemBuilder: (BuildContext context, int index) {
                       return MessageBubble(
                         message: messages[index].item1,
-                        isMe:
-                            messages[index].item2, // alternate bubble alignment
+                        isMe: messages[index].item2,
+                        messages: messages, // alternate bubble alignment
                       );
                     },
                   );
@@ -271,62 +270,22 @@ class _ChatState extends State<Chat> with ChangeNotifier {
   }
 }
 
-/*
-// This is the type used by the popup menu below.
-enum SampleItem { itemOne, itemTwo, itemThree }
-
-class PopupMenuExample extends StatefulWidget {
-  const PopupMenuExample({super.key});
-
-  @override
-  State<PopupMenuExample> createState() => _PopupMenuExampleState();
-}
-
-class _PopupMenuExampleState extends State<PopupMenuExample> {
-  SampleItem? selectedMenu;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('PopupMenuButton')),
-      body: Center(
-        child: PopupMenuButton<SampleItem>(
-          initialValue: selectedMenu,
-          // Callback that sets the selected popup menu item.
-          onSelected: (SampleItem item) {
-            setState(() {
-              selectedMenu = item;
-              print("selectedMenu: $selectedMenu");
-            });
-          },
-          itemBuilder: (BuildContext context) => <PopupMenuEntry<SampleItem>>[
-            const PopupMenuItem<SampleItem>(
-              value: SampleItem.itemOne,
-              child: Text('Item 1'),
-            ),
-            const PopupMenuItem<SampleItem>(
-              value: SampleItem.itemTwo,
-              child: Text('Item 2'),
-            ),
-            const PopupMenuItem<SampleItem>(
-              value: SampleItem.itemThree,
-              child: Text('Item 3'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}*/
-
-class MessageBubble extends StatelessWidget {
+class MessageBubble extends StatefulWidget {
   final String message;
   final bool isMe;
+  List<Tuple2<String, bool>> messages;
+
+  MessageBubble(
+      {required this.message, required this.isMe, required this.messages});
+
+  @override
+  State<MessageBubble> createState() => _MessageBubbleState();
+}
+
+class _MessageBubbleState extends State<MessageBubble> {
   final PopupMenuExample _popup = const PopupMenuExample();
 
   Offset _tapPosition = Offset.zero;
-
-  MessageBubble({required this.message, required this.isMe});
 
   void _showContextMenu(BuildContext context) async {
     final RenderObject? overlay =
@@ -336,71 +295,95 @@ class MessageBubble extends StatelessWidget {
         context: context,
 
         // Show the context menu at the tap location
-        position: RelativeRect.fromRect(
+        /*position: RelativeRect.fromRect(
             Rect.fromLTWH(_tapPosition.dx, _tapPosition.dy, 30, 30),
             Rect.fromLTWH(0, 0, overlay!.paintBounds.size.width,
-                overlay.paintBounds.size.height)),
+                overlay.paintBounds.size.height)),*/
+        position: RelativeRect.fromLTRB(_tapPosition.dx, _tapPosition.dy - 30,
+            _tapPosition.dx + 30, _tapPosition.dy),
 
         // set a list of choices for the context menu
         items: [
           const PopupMenuItem(
-            value: 'favorites',
-            child: Text('Add To Favorites'),
+            value: 'Copy',
+            child: Text('Copy'),
           ),
           const PopupMenuItem(
-            value: 'comment',
-            child: Text('Write Comment'),
-          ),
-          const PopupMenuItem(
-            value: 'hide',
-            child: Text('Hide'),
+            value: 'Delete',
+            child: Text('Delete'),
           ),
         ]);
 
     // Implement the logic for each choice here
     switch (result) {
-      case 'favorites':
-        debugPrint('Add To Favorites');
+      case 'Copy':
+        debugPrint('copy');
+        await Clipboard.setData(ClipboardData(text: widget.message));
         break;
-      case 'comment':
-        debugPrint('Write Comment');
-        break;
-      case 'hide':
-        debugPrint('Hide');
+      case 'Delete':
+        debugPrint('delete');
+        List<Tuple2<String, bool>> messagesNew = [];
+        widget.messages.forEach((message) {
+          if (message.item1 != widget.message) {
+            messagesNew.add(message);
+          }
+          // dario to do: sate to sahred_pref
+          // and trigger state update in another widget
+        });
         break;
     }
   }
 
   void _getTapPosition(BuildContext context, TapDownDetails details) {
     final RenderBox referenceBox = context.findRenderObject() as RenderBox;
-    //setState(() {
-    _tapPosition = referenceBox.globalToLocal(details.globalPosition);
-    //});
+    setState(() {
+      _tapPosition = referenceBox.globalToLocal(details.globalPosition);
+      print("0 _tapPosition: $_tapPosition");
+
+      final Size size = referenceBox.size; // or _widgetKey.currentContext?.size
+      print('Size: ${size.width}, ${size.height}');
+
+      final Offset offset = referenceBox.localToGlobal(Offset.zero);
+      print('Offset: ${offset.dx}, ${offset.dy}');
+      print(
+          'Position: ${(offset.dx + size.width)}, ${(offset.dy + size.height)}');
+
+      Size screenSize = MediaQuery.of(context).size;
+      print("screenSize.height: ${screenSize.height}");
+      print("screenSize.width: ${screenSize.width}");
+
+      if (_tapPosition.dx + 30 > screenSize.width - 30) {
+        _tapPosition = Offset(screenSize.width - 30, (offset.dy + size.height));
+      } else {
+        _tapPosition = Offset(_tapPosition.dx, (offset.dy + size.height));
+      }
+      print("_tapPosition: $_tapPosition");
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: widget.isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
           margin: EdgeInsets.all(10),
           padding: EdgeInsets.all(15),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: isMe ? Colors.blue : Colors.grey.shade200,
+            color: widget.isMe ? Colors.blue : Colors.grey.shade200,
           ),
           child: GestureDetector(
             onTapDown: (details) => _getTapPosition(context, details),
             onLongPress: () {
               // Handle tap on the text
-              //print("ononLongPressTap: $message");
+              print("ononLongPressTap: ${widget.message}");
               //const PopupMenuExample();
               _showContextMenu(context);
             },
             child: Text(
-              message,
+              widget.message,
               style: TextStyle(
-                color: isMe ? Colors.white : Colors.black,
+                color: widget.isMe ? Colors.white : Colors.black,
                 fontSize: 16,
               ),
             ),
