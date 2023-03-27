@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "361285898250",
+    "project_id": "mygptmsg",
+    "storage_bucket": "mygptmsg.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:361285898250:android:dc74de29533e03f6054ff3",
+        "android_client_info": {
+          "package_name": "com.example.messenger_demo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "361285898250-rhgqb947v58nguk5n6cvhagbvjvuq7b0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1hVLU5CXa3AhdFOuSrUhgqfP_fTTCpN4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "361285898250-rhgqb947v58nguk5n6cvhagbvjvuq7b0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "361285898250-ntfn508o6b94fc1rvtboedtah6pioma7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.messengerDemo"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
