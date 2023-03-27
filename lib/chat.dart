@@ -15,7 +15,7 @@ class Chat extends StatefulWidget {
   _ChatState createState() => _ChatState();
 }
 
-class _ChatState extends State<Chat> with ChangeNotifier {
+class _ChatState extends State<Chat> {
   final TextEditingController _textEditingController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
@@ -31,9 +31,10 @@ class _ChatState extends State<Chat> with ChangeNotifier {
   void initState() {
     print("INITSTATE");
     super.initState();
+    /*
     _focusNode.addListener(() {
       print('Listener');
-    });
+    });*/
     _loadList();
 
 /*
@@ -52,9 +53,6 @@ class _ChatState extends State<Chat> with ChangeNotifier {
 
   @override
   void dispose() {
-    _focusNode.dispose();
-    _scrollController.dispose();
-    _listLength.dispose();
     super.dispose();
   }
 
