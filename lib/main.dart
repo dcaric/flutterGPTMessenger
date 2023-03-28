@@ -52,7 +52,7 @@ class _MyAppState extends State<MyApp> {
             children: [
               Center(child: Chat()),
               Center(child: Settings()),
-              Center(child: Login()),
+              Center(child: SignUpPage()),
             ],
           ),
           bottomNavigationBar: BottomAppBar(
