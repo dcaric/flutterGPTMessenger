@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tuple/tuple.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -12,6 +15,34 @@ class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  Tuple2<String, String>? myFirestoreId;
+
+  Future<void> _saveFirestoreId(Tuple2<String, String> keyToSave) async {
+    final myTupleString = keyToSave.toString();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('firestore', myTupleString);
+    setState(() {
+      myFirestoreId = keyToSave;
+    });
+  }
+
+  Future<void> _readFirestoreId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? value = prefs.getString('firestore');
+    final myTuple = tupleFromString(value!);
+    print("myValue:$value");
+    setState(() {
+      myFirestoreId = myTuple;
+    });
+  }
+
+  Tuple2<String, String> tupleFromString(String string) {
+    final parts = string.substring(1, string.length - 1).split(', ');
+    final item1 = parts[0];
+    final item2 = parts[1];
+    return Tuple2(item1, item2);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +98,9 @@ class _LoginState extends State<Login> {
                           .collection('users')
                           .doc(user.uid)
                           .set({'email': user.email});
+                      Tuple2<String, String>? myTuple =
+                          Tuple2(user.email.toString(), user.uid);
+                      _saveFirestoreId(myTuple);
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text('User is logged in'),
                       ));

@@ -4,6 +4,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tuple/tuple.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+class MyNotifier extends ChangeNotifier {
+  Tuple2<String, String> myFirestoreId;
+
+  MyNotifier(this.myFirestoreId);
+
+  String get email => myFirestoreId.item1;
+  String get password => myFirestoreId.item1;
+
+  void updateFirestoreId(Tuple2<String, String> newId) {
+    myFirestoreId = newId;
+    notifyListeners();
+  }
+}
+
 class SignUpPage extends StatefulWidget {
   @override
   _SignUpPageState createState() => _SignUpPageState();
@@ -13,30 +27,35 @@ class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  Tuple2<String, String>? myFirestoreId;
+  Tuple2<String, String>? _myFirestoreId;
+  MyNotifier myFirestoreId = MyNotifier(const Tuple2("", ""));
 
   Future<void> _saveFirestoreId(Tuple2<String, String> keyToSave) async {
     final myTupleString = keyToSave.toString();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('firestore', myTupleString);
     setState(() {
-      myFirestoreId = keyToSave;
-      print("_saveFirestoreId myFirestoreId:$myFirestoreId");
+      _myFirestoreId = keyToSave;
+      myFirestoreId.updateFirestoreId(keyToSave);
+      print("_saveFirestoreId myFirestoreId:$_myFirestoreId");
     });
   }
 
   Future<void> _readFirestoreId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? value = prefs.getString('firestore');
-    final myTuple = tupleFromString(value!);
-    print("myValue:$value");
-    setState(() {
-      myFirestoreId = myTuple;
-      print("myFirestoreId:$myFirestoreId");
-      if (myFirestoreId != null) {
-        _loginOnFirestore(myFirestoreId!.item1, myFirestoreId!.item2);
-      }
-    });
+    print("_readFirestoreId myValue:$value");
+    if (value != null) {
+      final myTuple = tupleFromString(value!);
+      setState(() {
+        _myFirestoreId = myTuple;
+        print("myFirestoreId:$_myFirestoreId");
+        if (_myFirestoreId != null) {
+          _loginOnFirestore(_myFirestoreId!.item1, _myFirestoreId!.item2);
+          myFirestoreId.updateFirestoreId(_myFirestoreId!);
+        }
+      });
+    }
   }
 
   Tuple2<String, String> tupleFromString(String string) {
@@ -85,7 +104,10 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sign Up'),
+        // ignore: unnecessary_null_comparison
+        title: myFirestoreId.email != ""
+            ? const Text('User is logged in')
+            : const Text('Login'),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -94,53 +116,82 @@ class _SignUpPageState extends State<SignUpPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email'),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  return null;
-                },
+              Visibility(
+                visible: myFirestoreId.email == "" ? true : false,
+                child: TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(labelText: 'Email'),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    return null;
+                  },
+                ),
               ),
-              TextFormField(
-                controller: _passwordController,
-                decoration: InputDecoration(labelText: 'Password'),
-                obscureText: true,
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  return null;
-                },
+              Visibility(
+                visible: myFirestoreId.email == "" ? true : false,
+                child: TextFormField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(labelText: 'Password'),
+                  obscureText: true,
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    return null;
+                  },
+                ),
               ),
               SizedBox(height: 16.0),
-              ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Colors.blue),
-                  foregroundColor: MaterialStateProperty.all(Colors.white),
-                ),
-                child: Text("Sign In"),
-                onPressed: () async {
-                  try {
-                    final user = (await FirebaseAuth.instance
-                            .createUserWithEmailAndPassword(
-                      email: _emailController.text.trim(),
-                      password: _passwordController.text.trim(),
-                    ))
-                        .user;
-                    if (user != null) {
-                      // Navigator.of(context).pop();
+              Visibility(
+                visible: myFirestoreId.email == "" ? true : false,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(Colors.blue),
+                    foregroundColor: MaterialStateProperty.all(Colors.white),
+                  ),
+                  child: Text("Sign In"),
+                  onPressed: () async {
+                    String myPassw = "";
+                    try {
+                      var user;
+                      if (myFirestoreId.email != "") {
+                        user = (await FirebaseAuth.instance
+                                .signInWithEmailAndPassword(
+                          email: _emailController.text.trim(),
+                          password: _passwordController.text.trim(),
+                        ))
+                            .user;
+                      } else {
+                        user = (await FirebaseAuth.instance
+                                .createUserWithEmailAndPassword(
+                          email: _emailController.text.trim(),
+                          password: _passwordController.text.trim(),
+                        ))
+                            .user;
+                        print("After sign in user: $user");
+                      }
+
+                      if (user != null) {
+                        // Navigator.of(context).pop();
+                        Tuple2<String, String>? myTuple = Tuple2(
+                            user.email.toString(),
+                            _passwordController.text.trim());
+                        _saveFirestoreId(myTuple);
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('User is logged in'),
+                        ));
+                      }
+                    } catch (e) {
+                      print(e);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('Failed to sign up: $e'),
+                      ));
                     }
-                  } catch (e) {
-                    print(e);
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('Failed to sign up: $e'),
-                    ));
-                  }
-                },
-              )
+                  },
+                ),
+              ),
             ],
           ),
         ),

@@ -80,31 +80,6 @@ class _SettingsState extends State<Settings> {
                     print("** myKey: $myKey");
                   },
                 ),
-                ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.blue),
-                    foregroundColor: MaterialStateProperty.all(Colors.white),
-                  ),
-                  child: Text("Firestore"),
-                  onPressed: () async {
-                    WidgetsFlutterBinding.ensureInitialized();
-                    await Firebase.initializeApp(
-                      options: DefaultFirebaseOptions.currentPlatform,
-                    );
-                    // Ideal time to initialize
-                    //await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-
-                    FirebaseAuth.instance
-                        .authStateChanges()
-                        .listen((User? user) {
-                      if (user == null) {
-                        print('User is currently signed out!');
-                      } else {
-                        print('User is signed in!');
-                      }
-                    });
-                  },
-                ),
                 Icon(Icons.key),
                 SizedBox(width: 8),
                 // ignore: unnecessary_null_comparison
