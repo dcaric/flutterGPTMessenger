@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tuple/tuple.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import './local_store.dart';
 
+/*
 class MyNotifier extends ChangeNotifier {
   Tuple2<String, String> myFirestoreId;
 
@@ -17,6 +19,7 @@ class MyNotifier extends ChangeNotifier {
     notifyListeners();
   }
 }
+*/
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -28,8 +31,10 @@ class _SignUpPageState extends State<SignUpPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   Tuple2<String, String>? _myFirestoreId;
-  MyNotifier myFirestoreId = MyNotifier(const Tuple2("", ""));
+  LocalStore myFirestoreId = LocalStore(const Tuple2("", ""));
+  bool showLogin = false;
 
+/*
   Future<void> _saveFirestoreId(Tuple2<String, String> keyToSave) async {
     final myTupleString = keyToSave.toString();
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -64,6 +69,7 @@ class _SignUpPageState extends State<SignUpPage> {
     final item2 = parts[1];
     return Tuple2(item1, item2);
   }
+  */
 
   Future<void> _loginOnFirestore(String email, String password) async {
     try {
@@ -73,6 +79,7 @@ class _SignUpPageState extends State<SignUpPage> {
       ))
           .user;
       if (user != null) {
+        print("USER:$user");
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
@@ -91,13 +98,33 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
+  @override
   void initState() {
     super.initState();
-    // perform some action when the widget is displayed
-    //Tuple2<String, String>? myTuple = Tuple2("dario.caric@gmail.com", "Chatgpt23#");
-    //_saveFirestoreId(myTuple);
 
-    _readFirestoreId();
+    myFirestoreId.readFirestoreId().then((Tuple2<String, String>? firestoreid) {
+      if (firestoreid != null) {
+        print("firestoreid:$firestoreid");
+
+        myFirestoreId.loginOnFirestore(
+            firestoreid.item1, firestoreid.item2, completion);
+      }
+    });
+  }
+
+  void completion(bool userLogged) {
+    if (userLogged) {
+      showLogin = false;
+      print("show ScaffoldMessenger");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('User ${myFirestoreId.email} is logged in'),
+      ));
+    } else {
+      showLogin = true;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('User is not logged in'),
+      ));
+    }
   }
 
   @override
@@ -106,7 +133,7 @@ class _SignUpPageState extends State<SignUpPage> {
       appBar: AppBar(
         // ignore: unnecessary_null_comparison
         title: myFirestoreId.email != ""
-            ? const Text('User is logged in')
+            ? const Text('User is logged in *')
             : const Text('Login'),
       ),
       body: Padding(
@@ -117,7 +144,7 @@ class _SignUpPageState extends State<SignUpPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Visibility(
-                visible: myFirestoreId.email == "" ? true : false,
+                visible: showLogin ? true : false,
                 child: TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(labelText: 'Email'),
@@ -130,7 +157,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
               Visibility(
-                visible: myFirestoreId.email == "" ? true : false,
+                visible: showLogin ? true : false,
                 child: TextFormField(
                   controller: _passwordController,
                   decoration: InputDecoration(labelText: 'Password'),
@@ -145,7 +172,7 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
               SizedBox(height: 16.0),
               Visibility(
-                visible: myFirestoreId.email == "" ? true : false,
+                visible: showLogin ? true : false,
                 child: ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(Colors.blue),
@@ -156,13 +183,36 @@ class _SignUpPageState extends State<SignUpPage> {
                     String myPassw = "";
                     try {
                       var user;
+                      print("email: $_emailController.text.trim()");
+                      print("password: $_passwordController.text.trim()");
+
                       if (myFirestoreId.email != "") {
+                        try {
+                          UserCredential userCredential = await FirebaseAuth
+                              .instance
+                              .signInWithEmailAndPassword(
+                            email: _emailController.text.trim(),
+                            password: _passwordController.text.trim(),
+                          );
+                          User? user = userCredential.user;
+                        } on FirebaseAuthException catch (e) {
+                          if (e.code == 'user-not-found') {
+                            print('No user found for that email.');
+                          } else if (e.code == 'wrong-password') {
+                            print('Wrong password provided for that user.');
+                          } else if (e.code == 'invalid-email') {
+                            print('The email address is not valid.');
+                          } else {
+                            print('An error occurred: ${e.message}');
+                          }
+                        }
+/*
                         user = (await FirebaseAuth.instance
                                 .signInWithEmailAndPassword(
                           email: _emailController.text.trim(),
                           password: _passwordController.text.trim(),
                         ))
-                            .user;
+                            .user;*/
                       } else {
                         user = (await FirebaseAuth.instance
                                 .createUserWithEmailAndPassword(
@@ -178,9 +228,9 @@ class _SignUpPageState extends State<SignUpPage> {
                         Tuple2<String, String>? myTuple = Tuple2(
                             user.email.toString(),
                             _passwordController.text.trim());
-                        _saveFirestoreId(myTuple);
+                        myFirestoreId.saveFirestoreId(myTuple);
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('User is logged in'),
+                          content: Text('User is logged in 2'),
                         ));
                       }
                     } catch (e) {

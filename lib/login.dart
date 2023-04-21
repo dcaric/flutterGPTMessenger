@@ -93,7 +93,9 @@ class _LoginState extends State<Login> {
                       password: _passwordController.text.trim(),
                     ))
                             .user;
+
                     if (user != null) {
+                      print("user:$user");
                       await FirebaseFirestore.instance
                           .collection('users')
                           .doc(user.uid)
