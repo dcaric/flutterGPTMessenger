@@ -5,6 +5,8 @@ import './shared_preferences_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tuple/tuple.dart';
 
+const lastNMessagesToread = 30;
+
 class HttpRquest extends StatelessWidget {
   String? myKey;
 
@@ -58,11 +60,11 @@ class HttpRquest extends StatelessWidget {
     List<Tuple2<String, bool>>? messagesToLoad = await _loadList();
 
     String wholeQuestion = "";
-    if (messagesToLoad != null && messagesToLoad.length > 5) {
+    if (messagesToLoad != null && messagesToLoad.length > lastNMessagesToread) {
       print("*** messagesToLoad.length: ${messagesToLoad.length}");
 
       List<Tuple2<String, bool>> lastNItems = messagesToLoad.sublist(
-          messagesToLoad.length - 5, messagesToLoad.length);
+          messagesToLoad.length - lastNMessagesToread, messagesToLoad.length);
       lastNItems.forEach((element) {
         print("*** element: ${element.item1}");
 

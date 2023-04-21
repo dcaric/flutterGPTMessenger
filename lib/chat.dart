@@ -96,6 +96,7 @@ class _ChatState extends State<Chat> {
         });
   }
 
+/*
   Future<void> _onDone() async {
     print('Done button clicked!');
     setState(() {
@@ -112,6 +113,44 @@ class _ChatState extends State<Chat> {
       _listLength.value += 1;
       scrollDown();
     });
+    _saveList(messages);
+    print("response:$response");
+  }*/
+
+  String removeNewLineAtStart(String text) {
+    if (text.isNotEmpty && text.startsWith('\n')) {
+      return text.substring(1);
+    }
+    return text;
+  }
+
+  Future<void> _onDone() async {
+    print('Done button clicked!');
+    setState(() {
+      messages.add(Tuple2(_textEditingController.text, true));
+      _listLength.value += 1;
+    });
+
+    // Wait for the ListView to be updated before scrolling down
+    await Future.delayed(Duration(milliseconds: 100));
+    scrollDown();
+
+    var httpReq = HttpRquest();
+    var response =
+        await httpReq.sendRequestToOpenAI(_textEditingController.text);
+
+    // Remove the new line character at the start of the response if present
+    response = removeNewLineAtStart(response);
+    _textEditingController.clear();
+    setState(() {
+      messages.add(Tuple2(response, false));
+      _listLength.value += 1;
+    });
+
+    // Wait for the ListView to be updated before scrolling down
+    await Future.delayed(Duration(milliseconds: 100));
+    scrollDown();
+
     _saveList(messages);
     print("response:$response");
   }
@@ -132,7 +171,8 @@ class _ChatState extends State<Chat> {
         List<dynamic> items = data;
         var messagesToLoad = <Tuple2<String, bool>>[];
         for (var item in items) {
-          messagesToLoad.add(Tuple2(item['value1'], item['value2']));
+          messagesToLoad.add(
+              Tuple2(removeNewLineAtStart(item['value1']), item['value2']));
         }
         print("messagesToLoad:$messagesToLoad");
         setState(() {
@@ -157,7 +197,7 @@ class _ChatState extends State<Chat> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'GPTmsg',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -167,50 +207,48 @@ class _ChatState extends State<Chat> {
         ),
         resizeToAvoidBottomInset:
             false, // remove white space on top of keyboard
-        body: Stack(
+        body: Column(
           children: <Widget>[
-            Container(
-              child: ValueListenableBuilder<int>(
-                valueListenable: _listLength,
-                builder: (BuildContext context, int length, _) {
-                  return ListView.builder(
-                    controller: _scrollController,
-                    itemCount: messages.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return MessageBubble(
-                        message: messages[index].item1,
-                        isMe: messages[index].item2,
-                        messages: messages, // alternate bubble alignment
-                      );
-                    },
-                  );
-                },
+            Expanded(
+              child: Container(
+                child: ValueListenableBuilder<int>(
+                  valueListenable: _listLength,
+                  builder: (BuildContext context, int length, _) {
+                    return ListView.builder(
+                      controller: _scrollController,
+                      itemCount: messages.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return MessageBubble(
+                          message: messages[index].item1,
+                          isMe: messages[index].item2,
+                          messages: messages, // alternate bubble alignment
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                color: Colors.grey[200],
-                child: TextField(
-                  onSubmitted: (_) {
-                    if (_textEditingController.text != "") {
-                      _onDone();
-                    }
-                  },
-                  controller: _textEditingController,
-                  focusNode: _focusNode,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        //
-                        _textEditingController.clear();
-                      },
-                      icon: const Icon(Icons.clear),
-                    ),
-                    hintText: 'message',
-                    contentPadding: EdgeInsets.all(16.0),
+            Container(
+              color: Colors.grey[200],
+              child: TextField(
+                onSubmitted: (_) {
+                  if (_textEditingController.text != "") {
+                    _onDone();
+                  }
+                },
+                controller: _textEditingController,
+                focusNode: _focusNode,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      _textEditingController.clear();
+                    },
+                    icon: const Icon(Icons.clear),
                   ),
+                  hintText: 'message',
+                  contentPadding: EdgeInsets.all(16.0),
                 ),
               ),
             ),
@@ -247,7 +285,7 @@ class _ChatState extends State<Chat> {
     _listLength.value += 1;
     _scrollController.animateTo(
       _scrollController.position.maxScrollExtent,
-      duration: Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 500),
       curve: Curves.ease,
     );
   }

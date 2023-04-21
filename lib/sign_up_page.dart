@@ -34,43 +34,6 @@ class _SignUpPageState extends State<SignUpPage> {
   LocalStore myFirestoreId = LocalStore(const Tuple2("", ""));
   bool showLogin = false;
 
-/*
-  Future<void> _saveFirestoreId(Tuple2<String, String> keyToSave) async {
-    final myTupleString = keyToSave.toString();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('firestore', myTupleString);
-    setState(() {
-      _myFirestoreId = keyToSave;
-      myFirestoreId.updateFirestoreId(keyToSave);
-      print("_saveFirestoreId myFirestoreId:$_myFirestoreId");
-    });
-  }
-
-  Future<void> _readFirestoreId() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? value = prefs.getString('firestore');
-    print("_readFirestoreId myValue:$value");
-    if (value != null) {
-      final myTuple = tupleFromString(value!);
-      setState(() {
-        _myFirestoreId = myTuple;
-        print("myFirestoreId:$_myFirestoreId");
-        if (_myFirestoreId != null) {
-          _loginOnFirestore(_myFirestoreId!.item1, _myFirestoreId!.item2);
-          myFirestoreId.updateFirestoreId(_myFirestoreId!);
-        }
-      });
-    }
-  }
-
-  Tuple2<String, String> tupleFromString(String string) {
-    final parts = string.substring(1, string.length - 1).split(', ');
-    final item1 = parts[0];
-    final item2 = parts[1];
-    return Tuple2(item1, item2);
-  }
-  */
-
   Future<void> _loginOnFirestore(String email, String password) async {
     try {
       final user = (await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -103,6 +66,7 @@ class _SignUpPageState extends State<SignUpPage> {
     super.initState();
 
     myFirestoreId.readFirestoreId().then((Tuple2<String, String>? firestoreid) {
+      print("*** LOG IN *** showLogin:$showLogin");
       if (firestoreid != null) {
         print("firestoreid:$firestoreid");
 
@@ -144,7 +108,7 @@ class _SignUpPageState extends State<SignUpPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Visibility(
-                visible: showLogin ? true : false,
+                visible: showLogin,
                 child: TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(labelText: 'Email'),
@@ -157,7 +121,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
               Visibility(
-                visible: showLogin ? true : false,
+                visible: showLogin,
                 child: TextFormField(
                   controller: _passwordController,
                   decoration: InputDecoration(labelText: 'Password'),
@@ -172,7 +136,7 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
               SizedBox(height: 16.0),
               Visibility(
-                visible: showLogin ? true : false,
+                visible: showLogin,
                 child: ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(Colors.blue),
@@ -181,63 +145,61 @@ class _SignUpPageState extends State<SignUpPage> {
                   child: Text("Sign In"),
                   onPressed: () async {
                     String myPassw = "";
+                    var user;
                     try {
-                      var user;
-                      print("email: $_emailController.text.trim()");
-                      print("password: $_passwordController.text.trim()");
-
-                      if (myFirestoreId.email != "") {
+                      print("******* TRYE TO LOG IN *******");
+                      UserCredential userCredential = await FirebaseAuth
+                          .instance
+                          .signInWithEmailAndPassword(
+                        email: _emailController.text.trim(),
+                        password: _passwordController.text.trim(),
+                      );
+                      user = userCredential.user;
+                      showLogin = false;
+                      // save locally email and password
+                      myFirestoreId.saveFirestoreId(Tuple2(
+                          _emailController.text.trim(),
+                          _passwordController.text.trim()));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                            'User ${_emailController.text.trim()} is logged in'),
+                      ));
+                    } on FirebaseAuthException catch (e) {
+                      if (e.code == 'user-not-found') {
                         try {
-                          UserCredential userCredential = await FirebaseAuth
-                              .instance
-                              .signInWithEmailAndPassword(
+                          print("******* TRYE TO CREATE ACCOUNT *******");
+
+                          user = (await FirebaseAuth.instance
+                                  .createUserWithEmailAndPassword(
                             email: _emailController.text.trim(),
                             password: _passwordController.text.trim(),
-                          );
-                          User? user = userCredential.user;
-                        } on FirebaseAuthException catch (e) {
-                          if (e.code == 'user-not-found') {
-                            print('No user found for that email.');
-                          } else if (e.code == 'wrong-password') {
-                            print('Wrong password provided for that user.');
-                          } else if (e.code == 'invalid-email') {
-                            print('The email address is not valid.');
-                          } else {
-                            print('An error occurred: ${e.message}');
-                          }
+                          ))
+                              .user;
+                          print("After sign in user: $user");
+                          showLogin = false;
+                          // save locally email and password
+                          myFirestoreId.saveFirestoreId(Tuple2(
+                              _emailController.text.trim(),
+                              _passwordController.text.trim()));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                                'User ${_emailController.text.trim()} is logged in'),
+                          ));
+                        } catch (e) {
+                          print(e);
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text('Failed to sign up: $e'),
+                          ));
                         }
-/*
-                        user = (await FirebaseAuth.instance
-                                .signInWithEmailAndPassword(
-                          email: _emailController.text.trim(),
-                          password: _passwordController.text.trim(),
-                        ))
-                            .user;*/
-                      } else {
-                        user = (await FirebaseAuth.instance
-                                .createUserWithEmailAndPassword(
-                          email: _emailController.text.trim(),
-                          password: _passwordController.text.trim(),
-                        ))
-                            .user;
-                        print("After sign in user: $user");
-                      }
 
-                      if (user != null) {
-                        // Navigator.of(context).pop();
-                        Tuple2<String, String>? myTuple = Tuple2(
-                            user.email.toString(),
-                            _passwordController.text.trim());
-                        myFirestoreId.saveFirestoreId(myTuple);
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('User is logged in 2'),
-                        ));
+                        print('No user found for that email.');
+                      } else if (e.code == 'wrong-password') {
+                        print('Wrong password provided for that user.');
+                      } else if (e.code == 'invalid-email') {
+                        print('The email address is not valid.');
+                      } else {
+                        print('An error occurred: ${e.message}');
                       }
-                    } catch (e) {
-                      print(e);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('Failed to sign up: $e'),
-                      ));
                     }
                   },
                 ),
