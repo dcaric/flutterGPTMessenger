@@ -16,6 +16,13 @@ class Settings extends StatefulWidget {
 
   @override
   _SettingsState createState() => _SettingsState();
+
+  static Future<String?> readKey() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? value = prefs.getString('myKey');
+    print("myValue:$value");
+    return value;
+  }
 }
 
 class _SettingsState extends State<Settings> {

@@ -1,5 +1,7 @@
+import 'package:GPTmsg/settings.dart';
 import 'package:flutter/material.dart';
 import './chat.dart';
+import './settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -11,6 +13,7 @@ class ChatList extends StatefulWidget {
 class _ChatListState extends State<ChatList> {
   List<String> _chatList = [];
   TextEditingController _chatNameController = TextEditingController();
+  final Settings settings = const Settings();
 
   bool chatExists(String chatName) {
     return _chatList.contains(chatName);
@@ -84,6 +87,28 @@ class _ChatListState extends State<ChatList> {
     );
   }
 
+  void _showWarning(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Warning! You have to insert forst OpenAI key.'),
+          content: TextField(
+            controller: _chatNameController,
+          ),
+          actions: [
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _deleteItem(int index) {
     setState(() {
       _chatList.removeAt(index);
@@ -98,6 +123,18 @@ class _ChatListState extends State<ChatList> {
     _loadChats();
   }
 
+  void _showDialog() async {
+    String? chatKey = await Settings.readKey();
+    if (chatKey != null) {
+      // Do something
+      _showFormDialog(context);
+    } else {
+      print("There is no OpenAI key");
+      //_showWarning(context);
+    }
+    _showFormDialog(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,7 +144,8 @@ class _ChatListState extends State<ChatList> {
           IconButton(
             icon: Icon(Icons.add, color: Colors.white),
             onPressed: () {
-              _showFormDialog(context);
+              _showDialog();
+              //_showFormDialog(context);
             },
           ),
         ],
