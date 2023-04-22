@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.messenger_demo">
+    package="com.example.GPTmsg">
    <application
-        android:label="messenger_demo"
+        android:label="GPTmsg"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

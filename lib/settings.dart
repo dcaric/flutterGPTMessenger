@@ -5,12 +5,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 void main() {
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     home: Settings(),
+    debugShowCheckedModeBanner: false, // Add this line
   ));
 }
 
 class Settings extends StatefulWidget {
+  const Settings({super.key});
+
   @override
   _SettingsState createState() => _SettingsState();
 }
@@ -62,7 +65,7 @@ class _SettingsState extends State<Settings> {
                         myKeyText = value;
                       });
                     },
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Your OpenAI Key',
                       hintText: 'Your OpenAI Key',

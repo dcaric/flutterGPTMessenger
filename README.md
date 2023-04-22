@@ -1,4 +1,4 @@
-# messenger_demo
+# GPTmsg
 
 A new Flutter project.
 

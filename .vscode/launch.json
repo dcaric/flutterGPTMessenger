@@ -5,18 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "messenger_demo",
+            "name": "GPTmsg",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "messenger_demo (profile mode)",
+            "name": "GPTmsg (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "messenger_demo (release mode)",
+            "name": "GPTmsg (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

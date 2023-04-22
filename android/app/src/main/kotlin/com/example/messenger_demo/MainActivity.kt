@@ -1,4 +1,4 @@
-package com.example.messenger_demo
+package com.example.GPTmsg
 
 import io.flutter.embedding.android.FlutterActivity
 

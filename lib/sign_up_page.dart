@@ -66,26 +66,34 @@ class _SignUpPageState extends State<SignUpPage> {
     super.initState();
 
     myFirestoreId.readFirestoreId().then((Tuple2<String, String>? firestoreid) {
-      print("*** LOG IN *** showLogin:$showLogin");
       if (firestoreid != null) {
         print("firestoreid:$firestoreid");
 
         myFirestoreId.loginOnFirestore(
             firestoreid.item1, firestoreid.item2, completion);
+      } else {
+        setState(() {
+          showLogin = true;
+        });
       }
+      print("*** LOG IN *** showLogin:$showLogin ");
     });
   }
 
   void completion(bool userLogged) {
     if (userLogged) {
-      showLogin = false;
+      setState(() {
+        showLogin = false;
+      });
       print("show ScaffoldMessenger");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('User ${myFirestoreId.email} is logged in'),
       ));
     } else {
-      showLogin = true;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      setState(() {
+        showLogin = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('User is not logged in'),
       ));
     }
@@ -155,7 +163,9 @@ class _SignUpPageState extends State<SignUpPage> {
                         password: _passwordController.text.trim(),
                       );
                       user = userCredential.user;
-                      showLogin = false;
+                      setState(() {
+                        showLogin = false;
+                      });
                       // save locally email and password
                       myFirestoreId.saveFirestoreId(Tuple2(
                           _emailController.text.trim(),
@@ -176,7 +186,9 @@ class _SignUpPageState extends State<SignUpPage> {
                           ))
                               .user;
                           print("After sign in user: $user");
-                          showLogin = false;
+                          setState(() {
+                            showLogin = false;
+                          });
                           // save locally email and password
                           myFirestoreId.saveFirestoreId(Tuple2(
                               _emailController.text.trim(),

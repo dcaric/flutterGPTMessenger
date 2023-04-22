@@ -103,7 +103,7 @@ class _LoginState extends State<Login> {
                       Tuple2<String, String>? myTuple =
                           Tuple2(user.email.toString(), user.uid);
                       _saveFirestoreId(myTuple);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                         content: Text('User is logged in'),
                       ));
                       //Navigator.of(context).pop();

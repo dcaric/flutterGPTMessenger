@@ -1,6 +1,6 @@
 //import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:messenger_demo/http_request.dart';
+import 'package:GPTmsg/http_request.dart';
 import 'package:tuple/tuple.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -9,7 +9,8 @@ import 'package:flutter/services.dart';
 import './message_buble.dart';
 
 class Chat extends StatefulWidget {
-  const Chat({Key? key}) : super(key: key);
+  final String chatName;
+  const Chat({Key? key, required this.chatName}) : super(key: key);
 
   @override
   _ChatState createState() => _ChatState();
@@ -31,24 +32,8 @@ class _ChatState extends State<Chat> {
   void initState() {
     print("INITSTATE");
     super.initState();
-    /*
-    _focusNode.addListener(() {
-      print('Listener');
-    });*/
     _loadList();
-
-/*
-    _focusNode.addListener(() {
-      print('Focus changed: ${_focusNode.hasFocus}');
-
-      setState(() {
-        print("before _keyboardHeight: $_keyboardHeight");
-        _keyboardHeight = _focusNode.hasFocus
-            ? MediaQuery.of(context).viewInsets.bottom + 8.0
-            : 0.0;
-        print("after _keyboardHeight: $_keyboardHeight");
-      });
-    });*/
+    print("Chat name: ${widget.chatName}");
   }
 
   @override
@@ -58,20 +43,6 @@ class _ChatState extends State<Chat> {
 
   //const Chat({super.key});
   List<Tuple2<String, bool>> messages = [];
-
-/*
-  void hideKeyboard(BuildContext context) {
-    FocusScope.of(context).requestFocus(FocusNode());
-  }
-
-
-  void showKeyboard() {
-    _focusNode.requestFocus();
-  }
-
-  void dismissKeyboard() {
-    _focusNode.unfocus();
-  }*/
 
   void _startNewMessage(BuildContext ctx) {
     showModalBottomSheet(
@@ -86,7 +57,7 @@ class _ChatState extends State<Chat> {
               child: TextField(
                 controller: _textEditingController,
                 focusNode: _focusNode,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Enter your message',
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -95,27 +66,6 @@ class _ChatState extends State<Chat> {
           );
         });
   }
-
-/*
-  Future<void> _onDone() async {
-    print('Done button clicked!');
-    setState(() {
-      messages.add(Tuple2(_textEditingController.text, true));
-      _listLength.value += 1;
-      scrollDown();
-    });
-    var httpReq = HttpRquest();
-    var response =
-        await httpReq.sendRequestToOpenAI(_textEditingController.text);
-    _textEditingController.clear();
-    setState(() {
-      messages.add(Tuple2(response, false));
-      _listLength.value += 1;
-      scrollDown();
-    });
-    _saveList(messages);
-    print("response:$response");
-  }*/
 
   String removeNewLineAtStart(String text) {
     if (text.isNotEmpty && text.startsWith('\n')) {
@@ -197,6 +147,7 @@ class _ChatState extends State<Chat> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'GPTmsg',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -204,79 +155,77 @@ class _ChatState extends State<Chat> {
       home: Scaffold(
         appBar: AppBar(
           title: Text('ChatGPT'),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
         ),
         resizeToAvoidBottomInset:
             false, // remove white space on top of keyboard
-        body: Column(
-          children: <Widget>[
-            Expanded(
-              child: Container(
-                child: ValueListenableBuilder<int>(
-                  valueListenable: _listLength,
-                  builder: (BuildContext context, int length, _) {
-                    return ListView.builder(
-                      controller: _scrollController,
-                      itemCount: messages.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return MessageBubble(
-                          message: messages[index].item1,
-                          isMe: messages[index].item2,
-                          messages: messages, // alternate bubble alignment
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ),
-            Container(
-              color: Colors.grey[200],
-              child: TextField(
-                onSubmitted: (_) {
-                  if (_textEditingController.text != "") {
-                    _onDone();
-                  }
-                },
-                controller: _textEditingController,
-                focusNode: _focusNode,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      _textEditingController.clear();
-                    },
-                    icon: const Icon(Icons.clear),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Column(
+                children: <Widget>[
+                  Expanded(
+                    child: Container(
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: _listLength,
+                        builder: (BuildContext context, int length, _) {
+                          return ListView.builder(
+                            controller: _scrollController,
+                            itemCount: messages.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return MessageBubble(
+                                message: messages[index].item1,
+                                isMe: messages[index].item2,
+                                messages:
+                                    messages, // alternate bubble alignment
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                  hintText: 'message',
-                  contentPadding: EdgeInsets.all(16.0),
+                ],
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
+                  child: Container(
+                    color: Colors.grey[200],
+                    child: TextField(
+                      onSubmitted: (_) {
+                        if (_textEditingController.text != "") {
+                          _onDone();
+                        }
+                      },
+                      controller: _textEditingController,
+                      focusNode: _focusNode,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            _textEditingController.clear();
+                          },
+                          icon: const Icon(Icons.clear),
+                        ),
+                        hintText: 'message',
+                        contentPadding: EdgeInsets.all(16.0),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        /*floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            _listLength.value += 1;
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: Duration(milliseconds: 500),
-              curve: Curves.ease,
-            );
-          },
-          child: Icon(Icons.arrow_circle_down_rounded),
-        ),*/
-        /*
-        floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () => {_startNewMessage(context)},
-        ),*/
-        /*
-        floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () => {_startNewMessage(context)},
-        ),*/
       ),
     );
   }

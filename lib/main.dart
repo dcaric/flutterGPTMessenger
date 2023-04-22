@@ -7,6 +7,7 @@ import './chat.dart';
 import './settings.dart';
 import './login.dart';
 import './sign_up_page.dart';
+import './chat_list.dart';
 
 /*
 void main() {
@@ -44,23 +45,25 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner:
+          false, // Add this line to hide the Debug banner
       home: DefaultTabController(
         length: 3,
         child: Scaffold(
           body: TabBarView(
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             children: [
-              Center(child: Chat()),
+              Center(child: ChatList()),
               Center(child: Settings()),
               Center(child: SignUpPage()),
             ],
           ),
-          bottomNavigationBar: BottomAppBar(
+          bottomNavigationBar: const BottomAppBar(
             child: TabBar(
               isScrollable: false,
               labelColor: Colors.black,
               tabs: [
-                Tab(text: "Chat", icon: Icon(Icons.chat_bubble)),
+                Tab(text: "Chats", icon: Icon(Icons.chat_bubble)),
                 Tab(text: "Settings", icon: Icon(Icons.settings)),
                 Tab(text: "Login", icon: Icon(Icons.login)),
               ],
