@@ -8,6 +8,7 @@ import './settings.dart';
 import './login.dart';
 import './sign_up_page.dart';
 import './chat_list.dart';
+import './settings.dart';
 
 /*
 void main() {
@@ -42,6 +43,21 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  String keyPart1 = "sk-8xHDB5r9dXaYcPjIAXkVT3Blbk";
+  String keyPart2 = "FJMdfa58rewljdROwH0OYF";
+
+  @override
+  void initState() {
+    print("INITSTATE");
+    super.initState();
+    _saveKey();
+  }
+
+  void _saveKey() async {
+    Settings.saveKey(keyPart1 + keyPart2);
+    print("API KEY:${Settings.readKey()}");
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

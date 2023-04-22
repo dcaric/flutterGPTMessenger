@@ -145,7 +145,7 @@ class _ChatListState extends State<ChatList> {
       _showFormDialog(context);
     } else {
       print("There is no OpenAI key");
-      _showWarning(context, 'Warning! You have to insert forst OpenAI key.');
+      _showWarning(context, 'Warning! You have to insert first OpenAI key.');
     }
     //_showFormDialog(context);
   }

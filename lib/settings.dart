@@ -23,14 +23,16 @@ class Settings extends StatefulWidget {
     print("myValue:$value");
     return value;
   }
+
+  static Future<void> saveKey(String keyToSave) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('myKey', keyToSave);
+  }
 }
 
 class _SettingsState extends State<Settings> {
   String myKeyText = "";
   String? myKey;
-
-  String keyPart1 = "k-8xHDB5r9dXaYcPjIAXkVT3Blbk";
-  String keyPart2 = "FJMdfa58rewljdROwH0OYF";
 
   Future<void> _saveKey(String keyToSave) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -53,7 +55,6 @@ class _SettingsState extends State<Settings> {
     super.initState();
     // perform some action when the widget is displayed
     // just for now save key
-    _saveKey(keyPart1 + keyPart2);
     _readKey();
   }
 
