@@ -25,7 +25,7 @@ class _ChatState extends State<Chat> {
   final TextEditingController _controller1 = TextEditingController();
   final TextEditingController _controller2 = TextEditingController();
   final PopupMenuExample _popup = const PopupMenuExample();
-
+  bool _isLoading = false;
   double _keyboardHeight = 0.0;
 
   @override
@@ -77,6 +77,7 @@ class _ChatState extends State<Chat> {
   Future<void> _onDone() async {
     print('Done button clicked!');
     setState(() {
+      _isLoading = true;
       messages.add(Tuple2(_textEditingController.text, true));
       _listLength.value += 1;
     });
@@ -88,6 +89,10 @@ class _ChatState extends State<Chat> {
     var httpReq = HttpRquest();
     var response =
         await httpReq.sendRequestToOpenAI(_textEditingController.text);
+
+    setState(() {
+      _isLoading = false; // Set isLoading to false after receiving the response
+    });
 
     // Remove the new line character at the start of the response if present
     response = removeNewLineAtStart(response);
@@ -161,14 +166,12 @@ class _ChatState extends State<Chat> {
         primarySwatch: Colors.blue,
       ),
       home: Scaffold(
-        appBar: AppBar(
-          title: Text(truncateString(widget.chatName, 10)),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
+        appBar: LoadingAppBar(
+          title: truncateString(widget.chatName, 10),
+          isLoading: _isLoading, // Pass the isLoading state
+          onBackPressed: () {
+            Navigator.pop(context);
+          },
         ),
         resizeToAvoidBottomInset:
             false, // remove white space on top of keyboard
@@ -258,5 +261,40 @@ class _ChatState extends State<Chat> {
         curve: Curves.ease,
       );
     });
+  }
+}
+
+class LoadingAppBar extends StatefulWidget implements PreferredSizeWidget {
+  final String title;
+  final bool isLoading;
+  final VoidCallback onBackPressed;
+
+  LoadingAppBar({
+    required this.title,
+    this.isLoading = false,
+    required this.onBackPressed,
+  });
+
+  @override
+  _LoadingAppBarState createState() => _LoadingAppBarState();
+
+  @override
+  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+}
+
+class _LoadingAppBarState extends State<LoadingAppBar> {
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: widget.isLoading
+          ? CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            )
+          : Text(widget.title),
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back),
+        onPressed: widget.onBackPressed,
+      ),
+    );
   }
 }
