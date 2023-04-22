@@ -164,7 +164,8 @@ class _ChatState extends State<Chat> {
       debugShowCheckedModeBanner: false,
       title: 'GPTmsg',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: Color.fromARGB(255, 98, 73, 9),
+        scaffoldBackgroundColor: Color.fromARGB(255, 219, 203, 180),
       ),
       home: Scaffold(
         appBar: LoadingAppBar(
@@ -244,70 +245,6 @@ class _ChatState extends State<Chat> {
             ],
           ),
         ),
-
-        /*
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Column(
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                      child: ValueListenableBuilder<int>(
-                        valueListenable: _listLength,
-                        builder: (BuildContext context, int length, _) {
-                          return ListView.builder(
-                            controller: _scrollController,
-                            itemCount: messages.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return MessageBubble(
-                                message: messages[index].item1,
-                                isMe: messages[index].item2,
-                                messages:
-                                    messages, // alternate bubble alignment
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                  ),
-                  child: Container(
-                    color: Colors.grey[200],
-                    child: TextField(
-                      onSubmitted: (_) {
-                        if (_textEditingController.text != "") {
-                          _onDone();
-                        }
-                      },
-                      controller: _textEditingController,
-                      focusNode: _focusNode,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            _textEditingController.clear();
-                          },
-                          icon: const Icon(Icons.clear),
-                        ),
-                        hintText: 'message',
-                        contentPadding: EdgeInsets.all(16.0),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),*/
       ),
     );
   }
@@ -362,6 +299,7 @@ class _LoadingAppBarState extends State<LoadingAppBar> {
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             )
           : Text(widget.title),
+      backgroundColor: Color.fromARGB(255, 98, 73, 9),
       leading: IconButton(
         icon: Icon(Icons.arrow_back),
         onPressed: widget.onBackPressed,

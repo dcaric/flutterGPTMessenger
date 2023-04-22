@@ -68,6 +68,7 @@ class _MyAppState extends State<MyApp> {
         textTheme: GoogleFonts.notoSansTextTheme(
           Theme.of(context).textTheme,
         ),
+        primaryColor: Color.fromARGB(255, 98, 73, 9),
         scaffoldBackgroundColor: Color.fromARGB(255, 219, 203, 180),
       ),
       home: DefaultTabController(
@@ -85,7 +86,7 @@ class _MyAppState extends State<MyApp> {
             color: Color.fromARGB(255, 98, 73, 9),
             child: TabBar(
               isScrollable: false,
-              labelColor: Colors.black,
+              labelColor: Colors.white,
               tabs: [
                 Tab(text: "Chats", icon: Icon(Icons.chat_bubble)),
                 Tab(text: "Settings", icon: Icon(Icons.settings)),
