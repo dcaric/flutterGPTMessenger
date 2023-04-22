@@ -103,6 +103,8 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 98, 73, 9),
+
         // ignore: unnecessary_null_comparison
         title: myFirestoreId.email != ""
             ? const Text('User is logged in *')

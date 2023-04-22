@@ -95,7 +95,8 @@ class _ChatState extends State<Chat> {
     });
 
     // Remove the new line character at the start of the response if present
-    response = removeNewLineAtStart(response);
+    String responseNoNewLine = removeNewLineAtStart(response);
+    response = responseNoNewLine;
     _textEditingController.clear();
     setState(() {
       messages.add(Tuple2(response, false));
@@ -175,6 +176,76 @@ class _ChatState extends State<Chat> {
         ),
         resizeToAvoidBottomInset:
             false, // remove white space on top of keyboard
+
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 44.0,
+                ),
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: _listLength,
+                          builder: (BuildContext context, int length, _) {
+                            return ListView.builder(
+                              controller: _scrollController,
+                              itemCount: messages.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return MessageBubble(
+                                  message: messages[index].item1,
+                                  isMe: messages[index].item2,
+                                  messages:
+                                      messages, // alternate bubble alignment
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 0.0,
+                  ),
+                  child: Container(
+                    color: Colors.grey[200],
+                    child: TextField(
+                      onSubmitted: (_) {
+                        if (_textEditingController.text != "") {
+                          _onDone();
+                        }
+                      },
+                      controller: _textEditingController,
+                      focusNode: _focusNode,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            _textEditingController.clear();
+                          },
+                          icon: const Icon(Icons.clear),
+                        ),
+                        hintText: 'message',
+                        contentPadding: EdgeInsets.all(16.0),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        /*
         body: SafeArea(
           child: Stack(
             children: [
@@ -236,7 +307,7 @@ class _ChatState extends State<Chat> {
               ),
             ],
           ),
-        ),
+        ),*/
       ),
     );
   }
@@ -287,7 +358,7 @@ class _LoadingAppBarState extends State<LoadingAppBar> {
   Widget build(BuildContext context) {
     return AppBar(
       title: widget.isLoading
-          ? CircularProgressIndicator(
+          ? const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             )
           : Text(widget.title),

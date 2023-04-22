@@ -160,6 +160,7 @@ class _ChatListState extends State<ChatList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 98, 73, 9),
         title: Text('Chats'),
         actions: [
           IconButton(

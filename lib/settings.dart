@@ -62,6 +62,7 @@ class _SettingsState extends State<Settings> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          backgroundColor: Color.fromARGB(255, 98, 73, 9),
           title: Text('Settings'),
         ),
         body: Padding(

@@ -68,6 +68,7 @@ class _MyAppState extends State<MyApp> {
         textTheme: GoogleFonts.notoSansTextTheme(
           Theme.of(context).textTheme,
         ),
+        scaffoldBackgroundColor: Color.fromARGB(255, 219, 203, 180),
       ),
       home: DefaultTabController(
         length: 3,
@@ -81,6 +82,7 @@ class _MyAppState extends State<MyApp> {
             ],
           ),
           bottomNavigationBar: const BottomAppBar(
+            color: Color.fromARGB(255, 98, 73, 9),
             child: TabBar(
               isScrollable: false,
               labelColor: Colors.black,
