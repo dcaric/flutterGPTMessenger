@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import './chat.dart';
 import './settings.dart';
@@ -63,6 +64,11 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner:
           false, // Add this line to hide the Debug banner
+      theme: ThemeData(
+        textTheme: GoogleFonts.notoSansTextTheme(
+          Theme.of(context).textTheme,
+        ),
+      ),
       home: DefaultTabController(
         length: 3,
         child: Scaffold(

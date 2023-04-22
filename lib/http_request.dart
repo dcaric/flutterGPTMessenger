@@ -101,11 +101,25 @@ class HttpRquest extends StatelessWidget {
 
     print("1 response.statusCode: ${response.statusCode}");
 
+/*
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
       var text = jsonResponse['choices'][0]['text'];
-      //print("text: $text");
-      //print("response.body: ${response.body}");
+      print("text: $text");
+      //String responseBody = utf8.decode(text);
+      //print("responseBody: ${responseBody}");
+      return text;
+    } else {
+      throw Exception('Failed to send request: ${response.statusCode}');
+    }*/
+
+    if (response.statusCode == 200) {
+      // Decode the response body using UTF-8
+      String responseBody = utf8.decode(response.bodyBytes);
+      // Parse the JSON response
+      var jsonResponse = jsonDecode(responseBody);
+      var text = jsonResponse['choices'][0]['text'];
+      print("text: $text");
       return text;
     } else {
       throw Exception('Failed to send request: ${response.statusCode}');

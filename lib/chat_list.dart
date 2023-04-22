@@ -32,6 +32,11 @@ class _ChatListState extends State<ChatList> {
     return _chatList.contains(chatName);
   }
 
+  Future<void> deleteSingleKey(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(key);
+  }
+
   Future<void> _saveChatList(List<String> chatList) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String chatListJson = jsonEncode(chatList);
@@ -126,6 +131,7 @@ class _ChatListState extends State<ChatList> {
 
   void _deleteItem(int index) {
     setState(() {
+      deleteSingleKey(_chatList[index]);
       _chatList.removeAt(index);
       _saveChatList(_chatList);
     });
