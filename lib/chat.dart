@@ -107,7 +107,7 @@ class _ChatState extends State<Chat> {
 
   Future<void> _loadList() async {
     final prefs = await SharedPreferences.getInstance();
-    final json = prefs.getString('myList');
+    final json = prefs.getString(widget.chatName);
     print("loadList:$json");
 
     if (json != null) {
@@ -141,7 +141,15 @@ class _ChatState extends State<Chat> {
       list.map((item) => {'value1': item.item1, 'value2': item.item2}).toList(),
     );
     print("saveList:$json");
-    await prefs.setString('myList', json);
+    await prefs.setString(widget.chatName, json);
+  }
+
+  String truncateString(String input, int maxLength) {
+    if (input.length <= maxLength) {
+      return input;
+    } else {
+      return input.substring(0, maxLength) + '...';
+    }
   }
 
   @override
@@ -154,7 +162,7 @@ class _ChatState extends State<Chat> {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: Text('ChatGPT'),
+          title: Text(truncateString(widget.chatName, 10)),
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () {

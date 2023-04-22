@@ -14,6 +14,19 @@ class _ChatListState extends State<ChatList> {
   List<String> _chatList = [];
   TextEditingController _chatNameController = TextEditingController();
   final Settings settings = const Settings();
+  TextEditingController _searchController = TextEditingController();
+
+  // search
+  List<String> _filteredChatList() {
+    if (_searchController.text.isEmpty) {
+      return _chatList;
+    }
+
+    return _chatList
+        .where((chat) =>
+            chat.toLowerCase().contains(_searchController.text.toLowerCase()))
+        .toList();
+  }
 
   bool chatExists(String chatName) {
     return _chatList.contains(chatName);
@@ -74,11 +87,16 @@ class _ChatListState extends State<ChatList> {
               onPressed: () {
                 print("TextField value: ${_chatNameController.text}");
                 Navigator.of(context).pop();
-                setState(() {
-                  _chatList.add(_chatNameController.text);
-                  _saveChatList(_chatList);
-                  _chatNameController.text = "";
-                });
+                if (_chatNameController.text != "" &&
+                    !chatExists(_chatNameController.text)) {
+                  setState(() {
+                    _chatList.add(_chatNameController.text);
+                    _saveChatList(_chatList);
+                    _chatNameController.text = "";
+                  });
+                } else if (chatExists(_chatNameController.text)) {
+                  _showWarning(context, "This chat already exists");
+                }
               },
             ),
           ],
@@ -87,15 +105,12 @@ class _ChatListState extends State<ChatList> {
     );
   }
 
-  void _showWarning(BuildContext context) {
+  void _showWarning(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Warning! You have to insert forst OpenAI key.'),
-          content: TextField(
-            controller: _chatNameController,
-          ),
+          title: Text(message),
           actions: [
             TextButton(
               child: Text('OK'),
@@ -130,9 +145,9 @@ class _ChatListState extends State<ChatList> {
       _showFormDialog(context);
     } else {
       print("There is no OpenAI key");
-      //_showWarning(context);
+      _showWarning(context, 'Warning! You have to insert forst OpenAI key.');
     }
-    _showFormDialog(context);
+    //_showFormDialog(context);
   }
 
   @override
@@ -145,48 +160,72 @@ class _ChatListState extends State<ChatList> {
             icon: Icon(Icons.add, color: Colors.white),
             onPressed: () {
               _showDialog();
-              //_showFormDialog(context);
             },
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: _chatList.length,
-        itemBuilder: (context, index) {
-          return Dismissible(
-            key: Key(_chatList[index]),
-            background: Container(
-              color: Colors.red,
-              alignment: Alignment.centerRight,
-              child: const Padding(
-                padding: EdgeInsets.only(right: 16.0),
-                child: Icon(Icons.delete, color: Colors.white),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                labelText: "Search",
+                border: OutlineInputBorder(),
+                suffixIcon: Icon(Icons.search),
               ),
+              onChanged: (value) {
+                setState(() {});
+              },
             ),
-            onDismissed: (direction) {
-              String deletedItem = _chatList[index];
-              _deleteItem(index);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Deleted $deletedItem'),
-                ),
-              );
-            },
-            child: ListTile(
-              title: Text(_chatList[index]),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Chat(
-                      chatName: _chatList[index],
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount:
+                  _filteredChatList().length, // Use the filtered list here
+              itemBuilder: (context, index) {
+                return Dismissible(
+                  key: Key(
+                      _filteredChatList()[index]), // Use the filtered list here
+                  background: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    child: const Padding(
+                      padding: EdgeInsets.only(right: 16.0),
+                      child: Icon(Icons.delete, color: Colors.white),
                     ),
+                  ),
+                  onDismissed: (direction) {
+                    String deletedItem = _filteredChatList()[
+                        index]; // Use the filtered list here
+                    _deleteItem(_chatList.indexOf(deletedItem));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Deleted $deletedItem'),
+                      ),
+                    );
+                  },
+                  child: ListTile(
+                    title: Text(_filteredChatList()[
+                        index]), // Use the filtered list here
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Chat(
+                            chatName: _filteredChatList()[
+                                index], // Use the filtered list here
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 );
               },
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
