@@ -4,7 +4,6 @@ class SharedPreferencesHelper {
   static Future<String?> readKey() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? value = prefs.getString('myKey');
-    print("myValue:$value");
     return value;
   }
 }

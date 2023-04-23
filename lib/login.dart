@@ -31,7 +31,6 @@ class _LoginState extends State<Login> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? value = prefs.getString('firestore');
     final myTuple = tupleFromString(value!);
-    print("myValue:$value");
     setState(() {
       myFirestoreId = myTuple;
     });

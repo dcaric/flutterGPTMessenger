@@ -14,7 +14,6 @@ class HttpRquest extends StatelessWidget {
     //SharedPreferences prefs = await SharedPreferences.getInstance();
     //String? value = prefs.getString('myKey');
     String? value = await SharedPreferencesHelper.readKey();
-    print("myValue:$value");
     return value;
   }
 

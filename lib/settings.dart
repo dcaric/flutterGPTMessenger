@@ -20,7 +20,6 @@ class Settings extends StatefulWidget {
   static Future<String?> readKey() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? value = prefs.getString('myKey');
-    print("myValue:$value");
     return value;
   }
 
@@ -45,7 +44,6 @@ class _SettingsState extends State<Settings> {
   Future<void> _readKey() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? value = prefs.getString('myKey');
-    print("myValue:$value");
     setState(() {
       myKey = value;
     });

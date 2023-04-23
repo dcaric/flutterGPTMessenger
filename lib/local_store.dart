@@ -31,7 +31,7 @@ class LocalStore extends ChangeNotifier {
       print("_readFirestoreId myValue:$value");
       if (value != null) {
         final myTuple = tupleFromString(value);
-        print("myFirestoreId:$myTuple");
+        //print("myFirestoreId:$myTuple");
         updateFirestoreId(myTuple);
         return myTuple;
       }

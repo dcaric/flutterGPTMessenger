@@ -61,13 +61,48 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
+  Future<void> saveApiKey(String apiKey) async {
+    // Get the current user
+    User? currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser != null) {
+      // Save the API key to Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .set({'apiKey': apiKey});
+    } else {
+      // Handle user not signed in
+    }
+  }
+
+  Future<String?> readApiKey() async {
+    // Get the current user
+    User? currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser != null) {
+      // Read the API key from Firestore
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+      Map<String, dynamic>? data =
+          documentSnapshot.data() as Map<String, dynamic>?;
+      return data?['apiKey'] as String?;
+    } else {
+      // Handle user not signed in
+      return null;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
 
     myFirestoreId.readFirestoreId().then((Tuple2<String, String>? firestoreid) {
       if (firestoreid != null) {
-        print("firestoreid:$firestoreid");
+        print("*** firestoreid:$firestoreid");
 
         myFirestoreId.loginOnFirestore(
             firestoreid.item1, firestoreid.item2, completion);
@@ -77,6 +112,7 @@ class _SignUpPageState extends State<SignUpPage> {
         });
       }
       print("*** LOG IN *** showLogin:$showLogin ");
+      print("Read from Firestore:$readApiKey");
     });
   }
 
@@ -107,7 +143,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
         // ignore: unnecessary_null_comparison
         title: myFirestoreId.email != ""
-            ? const Text('User is logged in *')
+            ? const Text('User is logged in')
             : const Text('Login'),
       ),
       body: Padding(
