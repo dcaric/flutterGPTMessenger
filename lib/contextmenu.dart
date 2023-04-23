@@ -22,7 +22,7 @@ class _ContextMenuState extends State<ContextMenu> {
 
   void _showContextMenu(BuildContext context) async {
     final RenderObject? overlay =
-        Overlay.of(context)?.context.findRenderObject();
+        Overlay.of(context).context.findRenderObject();
 
     final result = await showMenu(
         context: context,

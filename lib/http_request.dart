@@ -24,9 +24,9 @@ class HttpRquest extends StatelessWidget {
     throw UnimplementedError();
   }
 
-  Future<List<Tuple2<String, bool>>?> _loadList() async {
+  Future<List<Tuple2<String, bool>>?> _loadList(String chatName) async {
     final prefs = await SharedPreferences.getInstance();
-    final json = prefs.getString('myList');
+    final json = prefs.getString(chatName);
     print("loadList:$json");
 
     if (json != null) {
@@ -51,13 +51,14 @@ class HttpRquest extends StatelessWidget {
     return null;
   }
 
-  Future<String> sendRequestToOpenAI(String question) async {
+  Future<String> sendRequestToOpenAI(String question, String chatName) async {
     String? myKey = await _readKey();
     print("*** myKey: ${myKey}");
     print("*** question: ${question}");
 
     // read last 5 conversations
-    List<Tuple2<String, bool>>? messagesToLoad = await _loadList();
+    List<Tuple2<String, bool>>? messagesToLoad = await _loadList(chatName);
+    print("*** messagesToLoad: $messagesToLoad");
 
     String wholeQuestion = "";
     if (messagesToLoad != null && messagesToLoad.length > lastNMessagesToread) {
@@ -70,10 +71,14 @@ class HttpRquest extends StatelessWidget {
 
         wholeQuestion = wholeQuestion + " > " + element.item1;
       });
-      wholeQuestion = wholeQuestion + " > " + question;
-    } else {
-      wholeQuestion = question;
+    } else if (messagesToLoad != null &&
+        messagesToLoad.length <= lastNMessagesToread) {
+      messagesToLoad.forEach((element) {
+        wholeQuestion = wholeQuestion + " > " + element.item1;
+      });
+      print("*** wholeQuestion: 1 $wholeQuestion");
     }
+    wholeQuestion = wholeQuestion + " > " + question;
 
     wholeQuestion = wholeQuestion.replaceAll('\n', ' ');
 

@@ -88,7 +88,8 @@ class _SettingsState extends State<Settings> {
                 ),
                 ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.blue),
+                    backgroundColor: MaterialStateProperty.all(
+                        Color.fromARGB(255, 98, 73, 9)),
                     foregroundColor: MaterialStateProperty.all(Colors.white),
                   ),
                   child: Text("SAVE"),

@@ -3,25 +3,37 @@ import 'package:tuple/tuple.dart';
 import './popup.dart';
 import 'package:flutter/services.dart';
 import './contextmenu.dart';
+import './chat.dart';
 
 class MessageBubble extends StatefulWidget {
   final String message;
   final bool isMe;
+  final String chatName;
+  final Function(int) onDelete;
   List<Tuple2<String, bool>> messages;
 
-  MessageBubble(
-      {required this.message, required this.isMe, required this.messages});
+  MessageBubble({
+    required this.message,
+    required this.isMe,
+    required this.messages,
+    required this.chatName,
+    required this.onDelete,
+  });
 
   @override
-  State<MessageBubble> createState() => _MessageBubbleState();
+  State<MessageBubble> createState() => _MessageBubbleState(onDelete: onDelete);
 }
 
 class _MessageBubbleState extends State<MessageBubble> {
-  final PopupMenuExample _popup = const PopupMenuExample();
-
   String get message => widget.message;
   bool get isMe => widget.isMe;
+  String get chatName => widget.chatName;
   List<Tuple2<String, bool>> get messages => widget.messages;
+  final Function(int) onDelete;
+
+  _MessageBubbleState({
+    required this.onDelete,
+  });
 
   late final ContextMenu _contextmenu =
       ContextMenu(isMe: isMe, message: message, messages: messages);
@@ -30,7 +42,7 @@ class _MessageBubbleState extends State<MessageBubble> {
 
   void _showContextMenu(BuildContext context) async {
     final RenderObject? overlay =
-        Overlay.of(context)?.context.findRenderObject();
+        Overlay.of(context).context.findRenderObject();
 
     final result = await showMenu(
         context: context,
@@ -63,14 +75,9 @@ class _MessageBubbleState extends State<MessageBubble> {
         break;
       case 'Delete':
         debugPrint('delete');
-        List<Tuple2<String, bool>> messagesNew = [];
-        widget.messages.forEach((message) {
-          if (message.item1 != widget.message) {
-            messagesNew.add(message);
-          }
-          // dario to do: sate to sahred_pref
-          // and trigger state update in another widget
-        });
+        int index =
+            messages.indexWhere((element) => element.item1 == widget.message);
+        onDelete(index);
         break;
     }
   }
@@ -111,13 +118,15 @@ class _MessageBubbleState extends State<MessageBubble> {
           padding: EdgeInsets.all(15),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: widget.isMe ? Colors.blue : Colors.grey.shade200,
+            color: widget.isMe
+                ? Color.fromARGB(255, 207, 127, 15)
+                : Color.fromARGB(230, 220, 197, 167),
           ),
           child: GestureDetector(
             onTapDown: (details) => {_getTapPosition(context, details)},
             onLongPress: () {
               // Handle tap on the text
-              print("ononLongPressTap: ${widget.message}");
+              print("ononLongPressTap: $message");
               //const PopupMenuExample();
               _showContextMenu(context);
             },

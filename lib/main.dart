@@ -69,7 +69,7 @@ class _MyAppState extends State<MyApp> {
           Theme.of(context).textTheme,
         ),
         primaryColor: Color.fromARGB(255, 98, 73, 9),
-        scaffoldBackgroundColor: Color.fromARGB(255, 219, 203, 180),
+        scaffoldBackgroundColor: Color.fromARGB(255, 225, 218, 208),
       ),
       home: DefaultTabController(
         length: 3,

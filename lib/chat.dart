@@ -5,7 +5,6 @@ import 'package:tuple/tuple.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import './popup.dart';
-import 'package:flutter/services.dart';
 import './message_buble.dart';
 
 class Chat extends StatefulWidget {
@@ -22,17 +21,13 @@ class _ChatState extends State<Chat> {
   final ScrollController _scrollController = ScrollController();
   final ValueNotifier<int> _listLength = ValueNotifier<int>(0);
 
-  final TextEditingController _controller1 = TextEditingController();
-  final TextEditingController _controller2 = TextEditingController();
-  final PopupMenuExample _popup = const PopupMenuExample();
   bool _isLoading = false;
-  double _keyboardHeight = 0.0;
 
   @override
   void initState() {
     print("INITSTATE");
     super.initState();
-    _loadList();
+    loadList();
     print("Chat name: ${widget.chatName}");
   }
 
@@ -67,8 +62,8 @@ class _ChatState extends State<Chat> {
         });
   }
 
-  String removeNewLineAtStart(String text) {
-    if (text.isNotEmpty && text.startsWith('\n')) {
+  String removeNewLineAtStart(String text, String removeString) {
+    if (text.isNotEmpty && text.startsWith(removeString)) {
       return text.substring(1);
     }
     return text;
@@ -87,16 +82,16 @@ class _ChatState extends State<Chat> {
     scrollDown();
 
     var httpReq = HttpRquest();
-    var response =
-        await httpReq.sendRequestToOpenAI(_textEditingController.text);
+    var response = await httpReq.sendRequestToOpenAI(
+        _textEditingController.text, widget.chatName);
 
     setState(() {
       _isLoading = false; // Set isLoading to false after receiving the response
     });
 
     // Remove the new line character at the start of the response if present
-    String responseNoNewLine = removeNewLineAtStart(response);
-    response = responseNoNewLine;
+    response = removeNewLineAtStart(response, '\n');
+    response = response.replaceAll('>', '');
     _textEditingController.clear();
     setState(() {
       messages.add(Tuple2(response, false));
@@ -111,7 +106,7 @@ class _ChatState extends State<Chat> {
     print("response:$response");
   }
 
-  Future<void> _loadList() async {
+  Future<void> loadList() async {
     final prefs = await SharedPreferences.getInstance();
     final json = prefs.getString(widget.chatName);
     print("loadList:$json");
@@ -127,8 +122,8 @@ class _ChatState extends State<Chat> {
         List<dynamic> items = data;
         var messagesToLoad = <Tuple2<String, bool>>[];
         for (var item in items) {
-          messagesToLoad.add(
-              Tuple2(removeNewLineAtStart(item['value1']), item['value2']));
+          messagesToLoad.add(Tuple2(
+              removeNewLineAtStart(item['value1'], '\n'), item['value2']));
         }
         print("messagesToLoad:$messagesToLoad");
         setState(() {
@@ -165,7 +160,7 @@ class _ChatState extends State<Chat> {
       title: 'GPTmsg',
       theme: ThemeData(
         primaryColor: Color.fromARGB(255, 98, 73, 9),
-        scaffoldBackgroundColor: Color.fromARGB(255, 219, 203, 180),
+        scaffoldBackgroundColor: Color.fromARGB(255, 225, 218, 208),
       ),
       home: Scaffold(
         appBar: LoadingAppBar(
@@ -199,9 +194,25 @@ class _ChatState extends State<Chat> {
                                 return MessageBubble(
                                   message: messages[index].item1,
                                   isMe: messages[index].item2,
-                                  messages:
-                                      messages, // alternate bubble alignment
+                                  messages: messages,
+                                  chatName: widget.chatName,
+                                  onDelete: (indexToDelete) {
+                                    setState(() {
+                                      messages.removeAt(indexToDelete);
+                                      _listLength.value -= 1;
+                                    });
+                                    _saveList(messages);
+                                    loadList();
+                                  },
                                 );
+
+                                /*MessageBubble(
+                                  message: messages[index].item1,
+                                  isMe: messages[index].item2,
+                                  messages: messages,
+                                  chatName: widget
+                                      .chatName, // alternate bubble alignment
+                                );*/
                               },
                             );
                           },
@@ -262,7 +273,7 @@ class _ChatState extends State<Chat> {
   void didChangeDependencies() {
     print("didChangeDependencies");
     super.didChangeDependencies();
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
         duration: Duration(milliseconds: 500),

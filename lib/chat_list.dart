@@ -86,6 +86,9 @@ class _ChatListState extends State<ChatList> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              style: TextButton.styleFrom(
+                primary: Color.fromARGB(255, 98, 73, 9),
+              ),
             ),
             TextButton(
               child: Text('Save'),
@@ -103,6 +106,9 @@ class _ChatListState extends State<ChatList> {
                   _showWarning(context, "This chat already exists");
                 }
               },
+              style: TextButton.styleFrom(
+                primary: Color.fromARGB(255, 98, 73, 9),
+              ),
             ),
           ],
         );
