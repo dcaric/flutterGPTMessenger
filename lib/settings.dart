@@ -44,6 +44,8 @@ class _SettingsState extends State<Settings> {
   Future<void> _readKey() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? value = prefs.getString('myKey');
+    print("** myKey value: $value");
+
     setState(() {
       myKey = value;
     });

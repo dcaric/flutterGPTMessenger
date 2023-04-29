@@ -65,9 +65,9 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner:
           false, // Add this line to hide the Debug banner
       theme: ThemeData(
-        textTheme: GoogleFonts.notoSansTextTheme(
-          Theme.of(context).textTheme,
-        ),
+        // textTheme: GoogleFonts.notoSansTextTheme(
+        //   Theme.of(context).textTheme,
+        // ),
         primaryColor: Color.fromARGB(255, 98, 73, 9),
         scaffoldBackgroundColor: Color.fromARGB(255, 225, 218, 208),
       ),
