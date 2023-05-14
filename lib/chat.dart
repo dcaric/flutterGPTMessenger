@@ -22,6 +22,7 @@ class _ChatState extends State<Chat> {
   final ValueNotifier<int> _listLength = ValueNotifier<int>(0);
 
   bool _isLoading = false;
+  double fontSize = 16;
 
   @override
   void initState() {
@@ -29,11 +30,21 @@ class _ChatState extends State<Chat> {
     super.initState();
     loadList();
     print("Chat name: ${widget.chatName}");
+    _readFontSize();
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Future<void> _readFontSize() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    double? value = prefs.getDouble('fontSize');
+    setState(() {
+      fontSize = value ?? 16;
+    });
+    print("font size: $value");
   }
 
   //const Chat({super.key});
@@ -82,8 +93,7 @@ class _ChatState extends State<Chat> {
     scrollDown();
 
     var httpReq = HttpRquest();
-    var response = await httpReq.sendRequestToOpenAI(
-        _textEditingController.text, widget.chatName);
+    var response = await httpReq.sendRequestToOpenAI(_textEditingController.text, widget.chatName);
 
     setState(() {
       _isLoading = false; // Set isLoading to false after receiving the response
@@ -122,8 +132,7 @@ class _ChatState extends State<Chat> {
         List<dynamic> items = data;
         var messagesToLoad = <Tuple2<String, bool>>[];
         for (var item in items) {
-          messagesToLoad.add(Tuple2(
-              removeNewLineAtStart(item['value1'], '\n'), item['value2']));
+          messagesToLoad.add(Tuple2(removeNewLineAtStart(item['value1'], '\n'), item['value2']));
         }
         print("messagesToLoad:$messagesToLoad");
         setState(() {
@@ -170,8 +179,7 @@ class _ChatState extends State<Chat> {
             Navigator.pop(context);
           },
         ),
-        resizeToAvoidBottomInset:
-            false, // remove white space on top of keyboard
+        resizeToAvoidBottomInset: false, // remove white space on top of keyboard
 
         body: SafeArea(
           child: Stack(
@@ -231,6 +239,9 @@ class _ChatState extends State<Chat> {
                   child: Container(
                     color: Colors.grey[200],
                     child: TextField(
+                      style: TextStyle(
+                        fontSize: fontSize,
+                      ),
                       onSubmitted: (_) {
                         if (_textEditingController.text != "") {
                           _onDone();

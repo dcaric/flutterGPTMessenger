@@ -4,6 +4,7 @@ import './popup.dart';
 import 'package:flutter/services.dart';
 import './contextmenu.dart';
 import './chat.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MessageBubble extends StatefulWidget {
   final String message;
@@ -31,18 +32,34 @@ class _MessageBubbleState extends State<MessageBubble> {
   List<Tuple2<String, bool>> get messages => widget.messages;
   final Function(int) onDelete;
 
+  double fontSize = 16;
+
   _MessageBubbleState({
     required this.onDelete,
   });
 
-  late final ContextMenu _contextmenu =
-      ContextMenu(isMe: isMe, message: message, messages: messages);
+  @override
+  void initState() {
+    print("INITSTATE MESSAGE BUBBLE");
+    super.initState();
+    _readFontSize();
+  }
+
+  late final ContextMenu _contextmenu = ContextMenu(isMe: isMe, message: message, messages: messages);
 
   Offset _tapPosition = Offset.zero;
 
+  Future<void> _readFontSize() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    double? value = prefs.getDouble('fontSize');
+    setState(() {
+      fontSize = value ?? 16;
+    });
+    print("font size: $value");
+  }
+
   void _showContextMenu(BuildContext context) async {
-    final RenderObject? overlay =
-        Overlay.of(context).context.findRenderObject();
+    final RenderObject? overlay = Overlay.of(context).context.findRenderObject();
 
     final result = await showMenu(
         context: context,
@@ -52,8 +69,7 @@ class _MessageBubbleState extends State<MessageBubble> {
             Rect.fromLTWH(_tapPosition.dx, _tapPosition.dy, 30, 30),
             Rect.fromLTWH(0, 0, overlay!.paintBounds.size.width,
                 overlay.paintBounds.size.height)),*/
-        position: RelativeRect.fromLTRB(_tapPosition.dx, _tapPosition.dy - 30,
-            _tapPosition.dx + 30, _tapPosition.dy),
+        position: RelativeRect.fromLTRB(_tapPosition.dx, _tapPosition.dy - 30, _tapPosition.dx + 30, _tapPosition.dy),
 
         // set a list of choices for the context menu
         items: [
@@ -75,8 +91,7 @@ class _MessageBubbleState extends State<MessageBubble> {
         break;
       case 'Delete':
         debugPrint('delete');
-        int index =
-            messages.indexWhere((element) => element.item1 == widget.message);
+        int index = messages.indexWhere((element) => element.item1 == widget.message);
         onDelete(index);
         break;
     }
@@ -93,8 +108,7 @@ class _MessageBubbleState extends State<MessageBubble> {
 
       final Offset offset = referenceBox.localToGlobal(Offset.zero);
       print('Offset: ${offset.dx}, ${offset.dy}');
-      print(
-          'Position: ${(offset.dx + size.width)}, ${(offset.dy + size.height)}');
+      print('Position: ${(offset.dx + size.width)}, ${(offset.dy + size.height)}');
 
       Size screenSize = MediaQuery.of(context).size;
       print("screenSize.height: ${screenSize.height}");
@@ -118,9 +132,7 @@ class _MessageBubbleState extends State<MessageBubble> {
           padding: EdgeInsets.all(15),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: widget.isMe
-                ? Color.fromARGB(255, 207, 127, 15)
-                : Color.fromARGB(230, 220, 197, 167),
+            color: widget.isMe ? Color.fromARGB(255, 207, 127, 15) : Color.fromARGB(230, 220, 197, 167),
           ),
           child: GestureDetector(
             onTapDown: (details) => {_getTapPosition(context, details)},
@@ -134,7 +146,7 @@ class _MessageBubbleState extends State<MessageBubble> {
               widget.message,
               style: TextStyle(
                 color: widget.isMe ? Colors.white : Colors.black,
-                fontSize: 16,
+                fontSize: fontSize,
               ),
             ),
           )),

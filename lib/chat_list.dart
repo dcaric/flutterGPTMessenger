@@ -16,16 +16,15 @@ class _ChatListState extends State<ChatList> {
   final Settings settings = const Settings();
   TextEditingController _searchController = TextEditingController();
 
+  double fontSize = 16;
+
   // search
   List<String> _filteredChatList() {
     if (_searchController.text.isEmpty) {
       return _chatList;
     }
 
-    return _chatList
-        .where((chat) =>
-            chat.toLowerCase().contains(_searchController.text.toLowerCase()))
-        .toList();
+    return _chatList.where((chat) => chat.toLowerCase().contains(_searchController.text.toLowerCase())).toList();
   }
 
   bool chatExists(String chatName) {
@@ -71,6 +70,15 @@ class _ChatListState extends State<ChatList> {
     }
   }
 
+  Future<void> _readFontSize() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    double? value = prefs.getDouble('fontSize');
+    setState(() {
+      fontSize = value ?? 16;
+    });
+    print("font size: $value");
+  }
+
   void _showFormDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -95,8 +103,7 @@ class _ChatListState extends State<ChatList> {
               onPressed: () {
                 print("TextField value: ${_chatNameController.text}");
                 Navigator.of(context).pop();
-                if (_chatNameController.text != "" &&
-                    !chatExists(_chatNameController.text)) {
+                if (_chatNameController.text != "" && !chatExists(_chatNameController.text)) {
                   setState(() {
                     _chatList.add(_chatNameController.text);
                     _saveChatList(_chatList);
@@ -148,6 +155,7 @@ class _ChatListState extends State<ChatList> {
     print("INITSTATE");
     super.initState();
     _loadChats();
+    _readFontSize();
   }
 
   void _showDialog() async {
@@ -195,12 +203,10 @@ class _ChatListState extends State<ChatList> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount:
-                  _filteredChatList().length, // Use the filtered list here
+              itemCount: _filteredChatList().length, // Use the filtered list here
               itemBuilder: (context, index) {
                 return Dismissible(
-                  key: Key(
-                      _filteredChatList()[index]), // Use the filtered list here
+                  key: Key(_filteredChatList()[index]), // Use the filtered list here
                   background: Container(
                     color: Colors.red,
                     alignment: Alignment.centerRight,
@@ -210,8 +216,7 @@ class _ChatListState extends State<ChatList> {
                     ),
                   ),
                   onDismissed: (direction) {
-                    String deletedItem = _filteredChatList()[
-                        index]; // Use the filtered list here
+                    String deletedItem = _filteredChatList()[index]; // Use the filtered list here
                     _deleteItem(_chatList.indexOf(deletedItem));
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -220,15 +225,19 @@ class _ChatListState extends State<ChatList> {
                     );
                   },
                   child: ListTile(
-                    title: Text(_filteredChatList()[
-                        index]), // Use the filtered list here
+                    title: Text(
+                      _filteredChatList()[index],
+                      style: TextStyle(
+                        //color: widget.isMe ? Colors.white : Colors.black,
+                        fontSize: fontSize,
+                      ),
+                    ), // Use the filtered list here
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => Chat(
-                            chatName: _filteredChatList()[
-                                index], // Use the filtered list here
+                            chatName: _filteredChatList()[index], // Use the filtered list here
                           ),
                         ),
                       );
