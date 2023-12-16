@@ -148,7 +148,10 @@ class _SettingsState extends State<Settings> {
                       onPressed: _decreaseFontSize,
                       child: Icon(Icons.remove),
                     ),
-                    Text('Decrease font'),
+                    Text(
+                      'Decrease font',
+                      style: TextStyle(fontSize: fontSize),
+                    ),
                   ],
                 ),
                 Column(
@@ -161,7 +164,10 @@ class _SettingsState extends State<Settings> {
                       onPressed: _increaseFontSize,
                       child: Icon(Icons.add),
                     ),
-                    Text('Increase font'),
+                    Text(
+                      'Increase font',
+                      style: TextStyle(fontSize: fontSize),
+                    ),
                   ],
                 ),
               ],
