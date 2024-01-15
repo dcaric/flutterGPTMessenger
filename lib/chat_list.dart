@@ -1,7 +1,6 @@
 import 'package:GPTmsg/settings.dart';
 import 'package:flutter/material.dart';
 import './chat.dart';
-import './settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -12,9 +11,9 @@ class ChatList extends StatefulWidget {
 
 class _ChatListState extends State<ChatList> {
   List<String> _chatList = [];
-  TextEditingController _chatNameController = TextEditingController();
+  final TextEditingController _chatNameController = TextEditingController();
   final Settings settings = const Settings();
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   double fontSize = 16;
 

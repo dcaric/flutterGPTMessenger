@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tuple/tuple.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import './local_store.dart';
@@ -192,7 +191,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   child: Text("Sign In"),
                   onPressed: () async {
                     String myPassw = "";
-                    var user;
+                    User? user;
                     try {
                       print("******* TRYE TO LOG IN *******");
                       UserCredential userCredential = await FirebaseAuth

@@ -34,16 +34,13 @@ class HttpRquest extends StatelessWidget {
       final data = jsonDecode(json);
       print("data:$data");
 
-      if (json != null) {
-        final data = jsonDecode(json);
-        List<dynamic> items = data;
-        var messagesToLoad = <Tuple2<String, bool>>[];
-        for (var item in items) {
-          messagesToLoad.add(Tuple2(item['value1'], item['value2']));
-        }
-        print("messagesToLoad:$messagesToLoad");
-        return messagesToLoad;
+      List<dynamic> items = data;
+      var messagesToLoad = <Tuple2<String, bool>>[];
+      for (var item in items) {
+        messagesToLoad.add(Tuple2(item['value1'], item['value2']));
       }
+      print("messagesToLoad:$messagesToLoad");
+      return messagesToLoad;
     } else {
       print("****");
     }
@@ -52,8 +49,8 @@ class HttpRquest extends StatelessWidget {
 
   Future<String> sendRequestToOpenAI(String question, String chatName) async {
     String? myKey = await _readKey();
-    print("*** myKey: ${myKey}");
-    print("*** question: ${question}");
+    print("*** myKey: $myKey");
+    print("*** question: $question");
 
     // read last 5 conversations
     List<Tuple2<String, bool>>? messagesToLoad = await _loadList(chatName);
@@ -63,34 +60,34 @@ class HttpRquest extends StatelessWidget {
     if (messagesToLoad != null && messagesToLoad.length > lastNMessagesToread) {
       print("*** messagesToLoad.length: ${messagesToLoad.length}");
 
-      List<Tuple2<String, bool>> lastNItems = messagesToLoad.sublist(
-          messagesToLoad.length - lastNMessagesToread, messagesToLoad.length);
-      lastNItems.forEach((element) {
+      List<Tuple2<String, bool>> lastNItems = messagesToLoad.sublist(messagesToLoad.length - lastNMessagesToread, messagesToLoad.length);
+      for (var element in lastNItems) {
         print("*** element: ${element.item1}");
 
-        wholeQuestion = wholeQuestion + " > " + element.item1;
-      });
-    } else if (messagesToLoad != null &&
-        messagesToLoad.length <= lastNMessagesToread) {
-      messagesToLoad.forEach((element) {
-        wholeQuestion = wholeQuestion + " > " + element.item1;
-      });
+        wholeQuestion = "$wholeQuestion > ${element.item1}";
+      }
+    } else if (messagesToLoad != null && messagesToLoad.length <= lastNMessagesToread) {
+      for (var element in messagesToLoad) {
+        wholeQuestion = "$wholeQuestion > ${element.item1}";
+      }
       print("*** wholeQuestion: 1 $wholeQuestion");
     }
-    wholeQuestion = wholeQuestion + " > " + question;
+    wholeQuestion = "$wholeQuestion > $question";
 
     wholeQuestion = wholeQuestion.replaceAll('\n', ' ');
 
     print("*** wholeQuestion: $wholeQuestion");
 
-    final openaiUrl = Uri.parse('https://api.openai.com/v1/completions');
+    final openaiUrl = Uri.parse('https://api.openai.com/v1/chat/completions');
     final headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $myKey',
     };
     final data = {
-      'model': 'text-davinci-003',
-      'prompt': wholeQuestion,
+      'model': 'gpt-3.5-turbo',
+      'messages': [
+        {'role': 'user', 'content': wholeQuestion}
+      ],
       'max_tokens': 1000,
       'temperature': 0.7,
       'n': 1,
@@ -122,7 +119,7 @@ class HttpRquest extends StatelessWidget {
       String responseBody = utf8.decode(response.bodyBytes);
       // Parse the JSON response
       var jsonResponse = jsonDecode(responseBody);
-      var text = jsonResponse['choices'][0]['text'];
+      var text = jsonResponse["choices"][0]["message"]["content"];
       print("text: $text");
       return text;
     } else {

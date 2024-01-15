@@ -4,7 +4,6 @@ import 'package:GPTmsg/http_request.dart';
 import 'package:tuple/tuple.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import './popup.dart';
 import './message_buble.dart';
 
 class Chat extends StatefulWidget {
@@ -89,7 +88,7 @@ class _ChatState extends State<Chat> {
     });
 
     // Wait for the ListView to be updated before scrolling down
-    await Future.delayed(Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 100));
     scrollDown();
 
     var httpReq = HttpRquest();
@@ -109,7 +108,7 @@ class _ChatState extends State<Chat> {
     });
 
     // Wait for the ListView to be updated before scrolling down
-    await Future.delayed(Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 100));
     scrollDown();
 
     _saveList(messages);
@@ -127,18 +126,15 @@ class _ChatState extends State<Chat> {
       final data = jsonDecode(json);
       print("data:$data");
 
-      if (json != null) {
-        final data = jsonDecode(json);
-        List<dynamic> items = data;
-        var messagesToLoad = <Tuple2<String, bool>>[];
-        for (var item in items) {
-          messagesToLoad.add(Tuple2(removeNewLineAtStart(item['value1'], '\n'), item['value2']));
-        }
-        print("messagesToLoad:$messagesToLoad");
-        setState(() {
-          messages = messagesToLoad;
-        });
+      List<dynamic> items = data;
+      var messagesToLoad = <Tuple2<String, bool>>[];
+      for (var item in items) {
+        messagesToLoad.add(Tuple2(removeNewLineAtStart(item['value1'], '\n'), item['value2']));
       }
+      print("messagesToLoad:$messagesToLoad");
+      setState(() {
+        messages = messagesToLoad;
+      });
     } else {
       print("****");
     }
@@ -158,7 +154,7 @@ class _ChatState extends State<Chat> {
     if (input.length <= maxLength) {
       return input;
     } else {
-      return input.substring(0, maxLength) + '...';
+      return '${input.substring(0, maxLength)}...';
     }
   }
 
@@ -287,7 +283,7 @@ class _ChatState extends State<Chat> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
-        duration: Duration(milliseconds: 500),
+        duration: const Duration(milliseconds: 500),
         curve: Curves.ease,
       );
     });

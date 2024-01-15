@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-import './chat.dart';
 import './settings.dart';
-import './login.dart';
-import './sign_up_page.dart';
 import './chat_list.dart';
-import './settings.dart';
 
 /*
 void main() {
@@ -66,7 +61,7 @@ class _MyAppState extends State<MyApp> {
             physics: const NeverScrollableScrollPhysics(),
             children: [
               Center(child: ChatList()),
-              Center(child: Settings()),
+              Center(child: const Settings()),
               //Center(child: SignUpPage()),
             ],
           ),

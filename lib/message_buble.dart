@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
-import './popup.dart';
 import 'package:flutter/services.dart';
 import './contextmenu.dart';
-import './chat.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MessageBubble extends StatefulWidget {
